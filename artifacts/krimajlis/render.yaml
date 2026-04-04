@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: krimajlis
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    envVars:
+      - key: SUPABASE_URL
+        value: https://aeoxabclkgcjhntynyoa.supabase.co
+      - key: SUPABASE_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFlb3hhYmNsa2djamhudHlueW9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMTExODYsImV4cCI6MjA5MDg4NzE4Nn0.s-Jh5vWKVPvnFfmHKQx2uHZOHntZ0fZM7dRknZLvjHE
+      - key: FLASK_ENV
+        value: production
+      - key: PORT
+        value: 8080

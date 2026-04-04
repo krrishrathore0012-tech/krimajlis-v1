@@ -3,9 +3,15 @@ import time
 import threading
 import random
 import math
+import uuid
+import json
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
+from apscheduler.schedulers.background import BackgroundScheduler
+from dotenv import load_dotenv
+
+load_dotenv()
 
 try:
     import yfinance as yf
@@ -24,6 +30,15 @@ try:
     REQUESTS_AVAILABLE = True
 except ImportError:
     REQUESTS_AVAILABLE = False
+
+try:
+    from db import safe_db_write, safe_db_read, safe_db_update
+    from validator import validate_pending_signals, compute_accuracy_summary
+    DB_AVAILABLE = True
+    print("[KRIMAJLIS] Supabase connected")
+except Exception as _db_err:
+    DB_AVAILABLE = False
+    print(f"[KRIMAJLIS] Running without Supabase: {_db_err}")
 
 from krimajlis_engine import KrimajlisEngine, NODE_DEFAULTS, REGIME_DEFAULTS, REGIME_LABELS
 
@@ -209,10 +224,54 @@ def drift_regime():
     state["last_regime_update"] = time.time()
 
 
+_last_persisted_ids = set()
+
+
+def persist_signals_to_db(signals):
+    if not DB_AVAILABLE:
+        return
+    global _last_persisted_ids
+    try:
+        new_ids = {s.get("signal_id") for s in signals}
+        if new_ids == _last_persisted_ids:
+            return
+        _last_persisted_ids = new_ids
+        node_snapshot = list(state.get("primary_nodes", {}).values())[:6]
+        for signal in signals[:25]:
+            entry_window_hours = signal.get("expected_reversion_sessions", 2)
+            expires_at = datetime.utcnow() + timedelta(hours=entry_window_hours * 6)
+            db_record = {
+                "signal_id": signal.get("signal_id", str(uuid.uuid4())),
+                "ticker": signal.get("ticker", ""),
+                "instrument_name": signal.get("instrument_name", ""),
+                "geography": signal.get("geography", ""),
+                "direction": signal.get("direction", ""),
+                "conviction": float(signal.get("conviction", 0)),
+                "loophole_type": signal.get("loophole_type", ""),
+                "alpha_layer": str(signal.get("alpha_layer", "")),
+                "rationale": signal.get("rationale", ""),
+                "gap_to_theoretical": float(signal.get("gap_to_theoretical", 0)),
+                "expected_reversion_sessions": int(signal.get("expected_reversion_sessions", 2)),
+                "regime_alignment": bool(signal.get("regime_alignment", False)),
+                "causal_chain": json.dumps(signal.get("causal_chain", [])),
+                "regime_state": json.dumps(state.get("regime", {})),
+                "primary_node_snapshot": json.dumps(node_snapshot),
+                "entry_window_expires_at": expires_at.isoformat(),
+                "validation_status": "PENDING",
+            }
+            safe_db_write("signals", db_record)
+    except Exception as e:
+        print(f"[KRIMAJLIS] Signal persist error: {e}")
+
+
 def regenerate_alpha_feed():
     signals = engine.generate_signals(state["regime"])
     state["alpha_feed"] = signals
     state["last_alpha_update"] = time.time()
+    try:
+        persist_signals_to_db(signals)
+    except Exception:
+        pass
 
 
 def node_refresh_thread():
@@ -677,6 +736,56 @@ def acquisition_brief():
             ),
         },
     })
+
+
+@app.route("/vault")
+def vault_page():
+    return render_template("vault.html")
+
+
+@app.route("/api/vault")
+def get_vault():
+    if not DB_AVAILABLE:
+        return jsonify({"error": "Database not available", "signals": []})
+    try:
+        validated = safe_db_read("signals", {"validation_status": "VALIDATED"}, limit=500)
+        summary = safe_db_read("accuracy_summary", limit=1)
+        return jsonify({
+            "validated_signals": validated,
+            "summary": summary[0] if summary else {},
+            "total_count": len(validated),
+        })
+    except Exception as e:
+        return jsonify({"error": str(e), "signals": []})
+
+
+def start_scheduler():
+    scheduler = BackgroundScheduler(timezone="UTC")
+    scheduler.add_job(
+        validate_pending_signals,
+        "cron",
+        hour="9,12,15,18,21",
+        minute=30,
+        id="validator",
+    )
+    scheduler.add_job(
+        compute_accuracy_summary,
+        "cron",
+        hour=22,
+        minute=0,
+        id="accuracy_summary",
+    )
+    scheduler.start()
+    print("[KRIMAJLIS] Scheduler started — validator runs at 9:30, 12:30, 15:30, 18:30, 21:30 UTC")
+
+
+try:
+    if DB_AVAILABLE:
+        start_scheduler()
+    else:
+        print("[KRIMAJLIS] Scheduler skipped — DB not available")
+except Exception as _sched_err:
+    print(f"[KRIMAJLIS] Scheduler failed to start: {_sched_err}")
 
 
 if __name__ == "__main__":

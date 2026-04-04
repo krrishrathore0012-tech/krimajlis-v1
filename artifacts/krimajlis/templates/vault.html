@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRIMAJLIS — Prediction Vault</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0b0d11; --surface: #0f1117; --surface2: #13161c;
+    --border: rgba(255,255,255,0.07); --text: #e8e6e0;
+    --muted: rgba(232,230,224,0.4); --gold: #c8a45a;
+    --green: #1ddf8a; --red: #ff4a4a; --blue: #4a9eff; --purple: #9b6fff;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Space Mono', monospace; font-size: 12px; min-height: 100vh; }
+
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 42px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .logo { font-size: 14px; font-weight: 700; letter-spacing: 0.18em; }
+  .logo span { font-size: 9px; color: var(--muted); margin-left: 12px; letter-spacing: 0.15em; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .back-link { font-size: 10px; color: var(--gold); letter-spacing: 0.1em; text-decoration: none; border: 1px solid rgba(200,164,90,0.3); padding: 3px 10px; }
+  .back-link:hover { background: rgba(200,164,90,0.1); }
+  .utc-clock { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  .page { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+  .section-title { font-size: 9px; letter-spacing: 0.18em; color: var(--muted); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 16px; margin-top: 28px; }
+  .section-title:first-child { margin-top: 0; }
+
+  .summary-bar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 28px; }
+  .summary-card { background: var(--surface); padding: 14px 16px; }
+  .summary-label { font-size: 8px; letter-spacing: 0.14em; color: var(--muted); margin-bottom: 6px; }
+  .summary-value { font-size: 20px; font-weight: 700; }
+  .summary-value.gold { color: var(--gold); }
+  .summary-value.green { color: var(--green); }
+  .summary-value.red { color: var(--red); }
+
+  .layer-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 4px; }
+  .layer-card { background: var(--surface); border: 1px solid var(--border); padding: 14px 16px; }
+  .layer-name { font-size: 8px; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 8px; }
+  .layer-rate { font-size: 22px; font-weight: 700; }
+  .layer-sub { font-size: 9px; color: var(--muted); margin-top: 4px; }
+
+  .controls { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .filter-btn { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.1em; padding: 4px 10px; background: transparent; border: 1px solid var(--border); color: var(--muted); cursor: pointer; }
+  .filter-btn.active { border-color: var(--gold); color: var(--gold); }
+  .filter-btn:hover { border-color: rgba(200,164,90,0.4); color: rgba(200,164,90,0.7); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 8px; letter-spacing: 0.1em; color: var(--muted); text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surface); cursor: pointer; user-select: none; }
+  th:hover { color: var(--gold); }
+  td { font-size: 10px; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text); vertical-align: middle; }
+  tr:hover td { background: var(--surface2); }
+
+  .badge { font-size: 8px; padding: 2px 6px; border-radius: 2px; font-weight: 700; letter-spacing: 0.06em; }
+  .badge-long  { background: rgba(29,223,138,0.12); color: var(--green); }
+  .badge-short { background: rgba(255,74,74,0.12);  color: var(--red); }
+  .badge-sell  { background: rgba(155,111,255,0.12); color: var(--purple); }
+  .badge-hit   { background: rgba(29,223,138,0.15); color: var(--green); font-size: 9px; }
+  .badge-miss  { background: rgba(255,74,74,0.15);  color: var(--red); font-size: 9px; }
+
+  .empty-state { padding: 48px 24px; text-align: center; }
+  .empty-state-title { font-size: 12px; letter-spacing: 0.12em; color: var(--gold); margin-bottom: 12px; }
+  .empty-state-body { font-size: 10px; color: var(--muted); line-height: 2; max-width: 540px; margin: 0 auto; }
+
+  .pagination { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
+  .page-btn { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.08em; padding: 4px 10px; background: transparent; border: 1px solid var(--border); color: var(--muted); cursor: pointer; }
+  .page-btn:hover, .page-btn.active { border-color: var(--gold); color: var(--gold); }
+  .page-info { font-size: 9px; color: var(--muted); margin: 0 4px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">KRIMAJLIS<span>PREDICTION VAULT · CONFIDENTIAL</span></div>
+  <div class="header-right">
+    <div class="utc-clock" id="utcClock">00:00:00 UTC</div>
+    <a class="back-link" href="/">← TERMINAL</a>
+  </div>
+</div>
+
+<div class="page">
+
+  <div class="section-title">VALIDATION SUMMARY</div>
+  <div class="summary-bar">
+    <div class="summary-card"><div class="summary-label">VALIDATED SIGNALS</div><div class="summary-value gold" id="sumTotal">—</div></div>
+    <div class="summary-card"><div class="summary-label">OVERALL ACCURACY</div><div class="summary-value green" id="sumAccuracy">—</div></div>
+    <div class="summary-card"><div class="summary-label">ROLLING 7-DAY</div><div class="summary-value" id="sum7d">—</div></div>
+    <div class="summary-card"><div class="summary-label">ROLLING 30-DAY</div><div class="summary-value" id="sum30d">—</div></div>
+    <div class="summary-card"><div class="summary-label">HIT COUNT</div><div class="summary-value green" id="sumHits">—</div></div>
+    <div class="summary-card"><div class="summary-label">MISS COUNT</div><div class="summary-value red" id="sumMisses">—</div></div>
+  </div>
+
+  <div class="section-title">ACCURACY BY LOOPHOLE TYPE</div>
+  <div class="layer-cards" id="layerCards">
+    <div class="layer-card"><div class="layer-name">TRANSMISSION LAG</div><div class="layer-rate" style="color:var(--muted)">—</div><div class="layer-sub">No data</div></div>
+    <div class="layer-card"><div class="layer-name">INSTITUTIONAL FLOW</div><div class="layer-rate" style="color:var(--muted)">—</div><div class="layer-sub">No data</div></div>
+    <div class="layer-card"><div class="layer-name">NARRATIVE VELOCITY</div><div class="layer-rate" style="color:var(--muted)">—</div><div class="layer-sub">No data</div></div>
+    <div class="layer-card"><div class="layer-name">SUPPLY CHAIN ECHO</div><div class="layer-rate" style="color:var(--muted)">—</div><div class="layer-sub">No data</div></div>
+    <div class="layer-card"><div class="layer-name">VOLATILITY SURFACE</div><div class="layer-rate" style="color:var(--muted)">—</div><div class="layer-sub">No data</div></div>
+  </div>
+
+  <div class="section-title" style="margin-top:28px">VALIDATED SIGNAL LEDGER</div>
+  <div class="controls" id="controls">
+    <button class="filter-btn active" onclick="setFilter('ALL',this)">ALL</button>
+    <button class="filter-btn" onclick="setFilter('TRANSMISSION_LAG',this)">TRANSMISSION LAG</button>
+    <button class="filter-btn" onclick="setFilter('INSTITUTIONAL_FLOW',this)">INSTITUTIONAL FLOW</button>
+    <button class="filter-btn" onclick="setFilter('NARRATIVE_VELOCITY',this)">NARRATIVE VELOCITY</button>
+    <button class="filter-btn" onclick="setFilter('SUPPLY_CHAIN_ECHO',this)">SUPPLY CHAIN ECHO</button>
+    <button class="filter-btn" onclick="setFilter('VOLATILITY_SURFACE',this)">VOLATILITY SURFACE</button>
+    <button class="filter-btn" onclick="setOutcomeFilter('ALL',this)" style="margin-left:16px">ALL OUTCOMES</button>
+    <button class="filter-btn" onclick="setOutcomeFilter('HIT',this)">HIT ONLY</button>
+    <button class="filter-btn" onclick="setOutcomeFilter('MISS',this)">MISS ONLY</button>
+  </div>
+  <div id="tableWrap"></div>
+  <div class="pagination" id="pagination"></div>
+
+</div>
+
+<script>
+  function updateClock() {
+    const n = new Date();
+    document.getElementById('utcClock').textContent =
+      String(n.getUTCHours()).padStart(2,'0')+':'+
+      String(n.getUTCMinutes()).padStart(2,'0')+':'+
+      String(n.getUTCSeconds()).padStart(2,'0')+' UTC';
+  }
+  setInterval(updateClock, 1000); updateClock();
+
+  let allSignals = [];
+  let activeFilter = 'ALL';
+  let activeOutcome = 'ALL';
+  let sortKey = 'created_at';
+  let sortDir = -1;
+  let currentPage = 1;
+  const PAGE_SIZE = 50;
+
+  const LOOPHOLE_ORDER = ['TRANSMISSION_LAG','INSTITUTIONAL_FLOW','NARRATIVE_VELOCITY','SUPPLY_CHAIN_ECHO','VOLATILITY_SURFACE'];
+
+  function dirBadge(d) {
+    const cls = d === 'LONG' ? 'badge-long' : d === 'SHORT' ? 'badge-short' : 'badge-sell';
+    return `<span class="badge ${cls}">${d||'—'}</span>`;
+  }
+  function outcomeBadge(o) {
+    if (!o) return '—';
+    return `<span class="badge badge-${o.toLowerCase()}">${o}</span>`;
+  }
+  function fmtTs(ts) { return ts ? ts.replace('T',' ').substring(0,16)+' UTC' : '—'; }
+  function fmtPct(v) { return v === null || v === undefined ? '—' : (v >= 0 ? '+' : '')+parseFloat(v).toFixed(3)+'%'; }
+
+  function setFilter(f, btn) {
+    activeFilter = f;
+    document.querySelectorAll('#controls .filter-btn').forEach((b,i) => { if(i<6) b.classList.remove('active'); });
+    btn.classList.add('active');
+    currentPage = 1;
+    renderTable();
+  }
+  function setOutcomeFilter(f, btn) {
+    activeOutcome = f;
+    const btns = document.querySelectorAll('#controls .filter-btn');
+    [btns[6],btns[7],btns[8]].forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentPage = 1;
+    renderTable();
+  }
+
+  function filtered() {
+    return allSignals.filter(s =>
+      (activeFilter === 'ALL' || s.loophole_type === activeFilter) &&
+      (activeOutcome === 'ALL' || s.outcome === activeOutcome)
+    );
+  }
+
+  function sortBy(key) {
+    if (sortKey === key) { sortDir *= -1; } else { sortKey = key; sortDir = -1; }
+    currentPage = 1;
+    renderTable();
+  }
+
+  function renderTable() {
+    const wrap = document.getElementById('tableWrap');
+    const data = filtered().sort((a,b) => {
+      let av = a[sortKey], bv = b[sortKey];
+      if (typeof av === 'string') return sortDir * av.localeCompare(bv);
+      return sortDir * ((av||0) - (bv||0));
+    });
+    if (!data.length) {
+      wrap.innerHTML = `<div class="empty-state">
+        <div class="empty-state-title">VALIDATION ENGINE ACTIVE</div>
+        <div class="empty-state-body">
+          No validated signals yet for the selected filter.<br>
+          First outcomes appear after signal entry windows expire.<br>
+          Check back after market open — validator runs at 09:30, 12:30, 15:30, 18:30, 21:30 UTC.
+        </div>
+      </div>`;
+      document.getElementById('pagination').innerHTML = '';
+      return;
+    }
+    const total = data.length;
+    const pages = Math.ceil(total / PAGE_SIZE);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const page = data.slice(start, start + PAGE_SIZE);
+
+    wrap.innerHTML = `<table>
+      <thead><tr>
+        <th onclick="sortBy('created_at')">TIMESTAMP ↕</th>
+        <th onclick="sortBy('ticker')">TICKER ↕</th>
+        <th>DIRECTION</th>
+        <th onclick="sortBy('conviction')">CONVICTION ↕</th>
+        <th onclick="sortBy('loophole_type')">LOOPHOLE TYPE ↕</th>
+        <th>PREDICTED</th>
+        <th onclick="sortBy('realized_move_pct')">REALIZED MOVE ↕</th>
+        <th onclick="sortBy('outcome')">OUTCOME ↕</th>
+      </tr></thead>
+      <tbody>${page.map(s => {
+        const convPct = s.conviction ? Math.round(s.conviction * 100) : '—';
+        const moveColor = (s.realized_move_pct||0) >= 0 ? 'var(--green)' : 'var(--red)';
+        return `<tr>
+          <td style="color:var(--muted);font-size:9px">${fmtTs(s.created_at)}</td>
+          <td style="font-weight:700">${s.ticker}</td>
+          <td>${dirBadge(s.direction)}</td>
+          <td style="color:var(--gold)">${convPct}%</td>
+          <td style="font-size:9px;color:var(--muted)">${(s.loophole_type||'').replace(/_/g,' ')}</td>
+          <td style="font-size:9px;color:var(--muted)">${s.direction === 'LONG' ? '↑ UP' : s.direction === 'SHORT' ? '↓ DOWN' : '⊕ COMPRESSION'}</td>
+          <td style="color:${moveColor}">${fmtPct(s.realized_move_pct)}</td>
+          <td>${outcomeBadge(s.outcome)}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+
+    const pag = document.getElementById('pagination');
+    if (pages <= 1) { pag.innerHTML = ''; return; }
+    let html = `<span class="page-info">${total} signals · page ${currentPage}/${pages}</span>`;
+    if (currentPage > 1) html += `<button class="page-btn" onclick="goPage(${currentPage-1})">← PREV</button>`;
+    for (let p = Math.max(1, currentPage-2); p <= Math.min(pages, currentPage+2); p++) {
+      html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    }
+    if (currentPage < pages) html += `<button class="page-btn" onclick="goPage(${currentPage+1})">NEXT →</button>`;
+    pag.innerHTML = html;
+  }
+
+  function goPage(p) { currentPage = p; renderTable(); window.scrollTo(0,0); }
+
+  function renderSummary(summ) {
+    const acc = summ.overall_accuracy;
+    const accEl = document.getElementById('sumAccuracy');
+    accEl.textContent = acc ? acc.toFixed(1)+'%' : '—';
+    accEl.className = 'summary-value ' + (acc >= 60 ? 'green' : acc >= 40 ? 'gold' : 'red');
+    document.getElementById('sumTotal').textContent = summ.validated_signals || 0;
+    const r7 = summ.rolling_7d_accuracy;
+    const r30 = summ.rolling_30d_accuracy;
+    const r7El = document.getElementById('sum7d');
+    r7El.textContent = r7 ? r7.toFixed(1)+'%' : '—';
+    r7El.className = 'summary-value ' + (r7 >= 60 ? 'green' : r7 >= 40 ? 'gold' : 'red');
+    const r30El = document.getElementById('sum30d');
+    r30El.textContent = r30 ? r30.toFixed(1)+'%' : '—';
+    r30El.className = 'summary-value ' + (r30 >= 60 ? 'green' : r30 >= 40 ? 'gold' : 'red');
+    document.getElementById('sumHits').textContent = summ.hit_count || 0;
+    document.getElementById('sumMisses').textContent = summ.miss_count || 0;
+  }
+
+  function renderLayerCards(byLoophole) {
+    const el = document.getElementById('layerCards');
+    el.innerHTML = LOOPHOLE_ORDER.map(key => {
+      const d = byLoophole[key] || byLoophole[key.toLowerCase()];
+      const name = key.replace(/_/g,' ');
+      if (!d) return `<div class="layer-card"><div class="layer-name">${name}</div><div class="layer-rate" style="color:var(--muted)">—</div><div class="layer-sub">No data</div></div>`;
+      const acc = d.accuracy || 0;
+      const col = acc >= 60 ? 'var(--green)' : acc >= 40 ? 'var(--gold)' : 'var(--red)';
+      return `<div class="layer-card">
+        <div class="layer-name">${name}</div>
+        <div class="layer-rate" style="color:${col}">${acc.toFixed(1)}%</div>
+        <div class="layer-sub">${d.total} signals · ${d.hits} hits</div>
+      </div>`;
+    }).join('');
+  }
+
+  async function loadVault() {
+    try {
+      const r = await fetch('/api/vault');
+      const d = await r.json();
+      if (d.error && !d.validated_signals?.length) {
+        document.getElementById('tableWrap').innerHTML = `<div class="empty-state">
+          <div class="empty-state-title">VALIDATION ENGINE ACTIVE</div>
+          <div class="empty-state-body">
+            Validation engine active. First outcomes appear after signal entry windows expire.<br>
+            Check back after market open — validator runs at 09:30, 12:30, 15:30, 18:30, 21:30 UTC.
+          </div>
+        </div>`;
+        return;
+      }
+      allSignals = d.validated_signals || [];
+      const summ = d.summary || {};
+      if (summ.overall_accuracy !== undefined) renderSummary(summ);
+      if (summ.by_loophole_type) renderLayerCards(summ.by_loophole_type);
+      renderTable();
+    } catch(e) {
+      document.getElementById('tableWrap').innerHTML = `<div class="empty-state">
+        <div class="empty-state-title">VALIDATION ENGINE ACTIVE</div>
+        <div class="empty-state-body">
+          Validation engine active. First outcomes appear after signal entry windows expire.<br>
+          Check back after market open.
+        </div>
+      </div>`;
+    }
+  }
+
+  loadVault();
+  setInterval(loadVault, 60000);
+</script>
+</body>
+</html>

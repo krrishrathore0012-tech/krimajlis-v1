@@ -4,3 +4,8 @@ yfinance
 numpy
 pandas
 requests
+apscheduler
+supabase
+psycopg2-binary
+gunicorn
+python-dotenv
