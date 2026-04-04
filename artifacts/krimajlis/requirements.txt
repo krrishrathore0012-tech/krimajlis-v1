@@ -3,3 +3,4 @@ flask-cors
 yfinance
 numpy
 pandas
+requests

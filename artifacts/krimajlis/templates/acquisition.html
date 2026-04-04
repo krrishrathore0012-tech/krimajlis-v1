@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRIMAJLIS — Acquisition Brief</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0b0d11;
+    --surface: #0f1117;
+    --surface2: #13161c;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8e6e0;
+    --muted: rgba(232,230,224,0.4);
+    --gold: #c8a45a;
+    --green: #1ddf8a;
+    --red: #ff4a4a;
+    --blue: #4a9eff;
+    --purple: #9b6fff;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Space Mono', monospace; font-size: 12px; min-height: 100vh; }
+
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 42px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .logo { font-size: 14px; font-weight: 700; letter-spacing: 0.18em; }
+  .logo span { font-size: 9px; color: var(--muted); margin-left: 12px; letter-spacing: 0.15em; }
+  .header-right { display: flex; align-items: center; gap: 20px; }
+  .back-link { font-size: 10px; color: var(--gold); letter-spacing: 0.1em; text-decoration: none; border: 1px solid rgba(200,164,90,0.3); padding: 3px 10px; }
+  .back-link:hover { background: rgba(200,164,90,0.1); }
+  .utc-clock { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 900px; margin: 0 auto; padding: 36px 24px 60px; }
+
+  .doc-header { border-left: 3px solid var(--gold); padding-left: 20px; margin-bottom: 36px; }
+  .doc-title { font-size: 22px; font-weight: 700; letter-spacing: 0.12em; color: var(--gold); margin-bottom: 6px; }
+  .doc-subtitle { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; }
+  .doc-meta { margin-top: 12px; font-size: 9px; color: var(--muted); line-height: 1.8; }
+  .doc-meta span { color: var(--text); margin-left: 8px; }
+
+  .section { margin-bottom: 32px; }
+  .section-heading { font-size: 9px; letter-spacing: 0.2em; color: var(--gold); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 16px; }
+
+  .desc { font-size: 11px; line-height: 1.9; color: rgba(232,230,224,0.8); margin-bottom: 12px; }
+
+  .kv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 12px; }
+  .kv-row { display: contents; }
+  .kv-key { background: var(--surface); padding: 10px 14px; font-size: 9px; letter-spacing: 0.1em; color: var(--muted); }
+  .kv-val { background: var(--surface); padding: 10px 14px; font-size: 10px; color: var(--text); }
+  .kv-val.gold { color: var(--gold); }
+  .kv-val.green { color: var(--green); }
+
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-size: 8px; padding: 3px 8px; border: 1px solid var(--border); color: var(--muted); letter-spacing: 0.08em; }
+  .tag.gold { border-color: rgba(200,164,90,0.3); color: var(--gold); }
+  .tag.green { border-color: rgba(29,223,138,0.3); color: var(--green); }
+
+  .comparables { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+  .comparable { background: var(--surface); border: 1px solid var(--border); padding: 16px; text-align: center; }
+  .comparable-name { font-size: 9px; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 8px; }
+  .comparable-badge { font-size: 8px; padding: 3px 8px; border: 1px solid rgba(200,164,90,0.3); color: var(--gold); }
+
+  .moat-box { background: var(--surface); border: 1px solid rgba(200,164,90,0.2); padding: 20px; border-left: 3px solid var(--gold); }
+  .moat-box p { font-size: 11px; line-height: 1.9; color: rgba(232,230,224,0.8); }
+
+  .footer { font-size: 8px; color: var(--muted); letter-spacing: 0.1em; margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); line-height: 1.8; }
+
+  .loading { color: var(--muted); font-size: 10px; letter-spacing: 0.1em; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">KRIMAJLIS<span>ACQUISITION BRIEF · CONFIDENTIAL</span></div>
+  <div class="header-right">
+    <div class="utc-clock" id="utcClock">00:00:00 UTC</div>
+    <a class="back-link" href="/">← TERMINAL</a>
+  </div>
+</div>
+
+<div class="page" id="page">
+  <div class="loading">LOADING ACQUISITION BRIEF...</div>
+</div>
+
+<script>
+  function updateClock() {
+    const n = new Date();
+    const h = String(n.getUTCHours()).padStart(2,'0');
+    const m = String(n.getUTCMinutes()).padStart(2,'0');
+    const s = String(n.getUTCSeconds()).padStart(2,'0');
+    document.getElementById('utcClock').textContent = h+':'+m+':'+s+' UTC';
+  }
+  setInterval(updateClock, 1000); updateClock();
+
+  function tags(arr, cls='') {
+    return arr.map(a => `<span class="tag ${cls}">${a}</span>`).join('');
+  }
+
+  function kv(rows) {
+    return `<div class="kv-grid">${rows.map(([k,v,cls]) =>
+      `<div class="kv-row"><div class="kv-key">${k}</div><div class="kv-val ${cls||''}">${v}</div></div>`
+    ).join('')}</div>`;
+  }
+
+  async function render() {
+    const r = await fetch('/api/acquisition-brief');
+    const d = await r.json();
+    const a = d.architecture, p = d.performance, i = d.integration, v = d.valuation_basis;
+    document.getElementById('page').innerHTML = `
+
+      <div class="doc-header">
+        <div class="doc-title">${d.system} — ACQUISITION BRIEF</div>
+        <div class="doc-subtitle">PREPARED BY ${d.developed_by} · VERSION ${d.version}</div>
+        <div class="doc-meta">
+          Classification: <span>CONFIDENTIAL — DUE DILIGENCE PACKAGE</span><br>
+          Generated: <span>${new Date().toUTCString()}</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-heading">01 · SYSTEM OVERVIEW</div>
+        <div class="desc">${d.description}</div>
+      </div>
+
+      <div class="section">
+        <div class="section-heading">02 · ARCHITECTURE</div>
+        ${kv([
+          ['Intelligence Layers', a.intelligence_layers, 'gold'],
+          ['Causal Relationships', a.causal_relationships, 'gold'],
+          ['Primary Data Nodes', a.primary_nodes, ''],
+          ['Signal Refresh Rate', a.signal_refresh_rate_seconds + 's', 'green'],
+          ['Geographies Covered', a.geographies_covered.length + ' regions', ''],
+          ['Causal Chain Depth', d.performance.causal_chain_depth, ''],
+        ])}
+        <div style="margin-bottom:8px;font-size:9px;color:var(--muted);letter-spacing:0.1em">GEOGRAPHIES</div>
+        <div class="tag-list" style="margin-bottom:16px">${tags(a.geographies_covered, 'gold')}</div>
+        <div style="margin-bottom:8px;font-size:9px;color:var(--muted);letter-spacing:0.1em">LOOPHOLE TYPES</div>
+        <div class="tag-list" style="margin-bottom:16px">${tags(a.loophole_types, 'green')}</div>
+        <div style="margin-bottom:8px;font-size:9px;color:var(--muted);letter-spacing:0.1em">DATA SOURCES</div>
+        <div class="tag-list">${tags(a.data_sources)}</div>
+      </div>
+
+      <div class="section">
+        <div class="section-heading">03 · LIVE PERFORMANCE METRICS</div>
+        ${kv([
+          ['Signals Generated (Session)', p.signals_generated_this_session, 'gold'],
+          ['Paper Trades Logged', p.paper_trades_logged, ''],
+          ['Paper Trade Win Rate', p.paper_trade_win_rate, 'green'],
+          ['Avg Conviction Score', p.avg_conviction_score, 'gold'],
+          ['Regime Accuracy', p.regime_accuracy, ''],
+          ['Causal Chain Depth', p.causal_chain_depth, ''],
+        ])}
+      </div>
+
+      <div class="section">
+        <div class="section-heading">04 · INTEGRATION LAYER</div>
+        ${kv([
+          ['VERITAS Bridge', i.veritas_bridge, ''],
+          ['GARUDA Bridge', i.garuda_bridge, ''],
+          ['Total API Endpoints', i.api_endpoints, 'gold'],
+          ['Paper Trading', i.paper_trading, 'green'],
+        ])}
+      </div>
+
+      <div class="section">
+        <div class="section-heading">05 · VALUATION BASIS</div>
+        <div style="margin-bottom:16px;font-size:9px;color:var(--muted);letter-spacing:0.1em">COMPARABLE SYSTEMS</div>
+        <div class="comparables">
+          ${v.comparable_systems.map(c => `<div class="comparable">
+            <div class="comparable-name">${c}</div>
+            <div class="comparable-badge">COMPARABLE</div>
+          </div>`).join('')}
+        </div>
+        <div style="margin:16px 0 8px;font-size:9px;color:var(--muted);letter-spacing:0.1em">DIFFERENTIATION</div>
+        <div class="moat-box" style="margin-bottom:16px"><p>${v.differentiation}</p></div>
+        <div style="margin:0 0 8px;font-size:9px;color:var(--muted);letter-spacing:0.1em">COMPETITIVE MOAT</div>
+        <div class="moat-box"><p>${v.moat}</p></div>
+      </div>
+
+      <div class="footer">
+        This document is generated programmatically from live KRIMAJLIS system state.<br>
+        Endpoint: GET /api/acquisition-brief · Rendered: GET /acquisition<br>
+        © ${new Date().getUTCFullYear()} ${d.developed_by} · All rights reserved
+      </div>
+    `;
+  }
+
+  render();
+</script>
+</body>
+</html>

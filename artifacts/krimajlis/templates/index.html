@@ -813,6 +813,7 @@
   <div class="header-right">
     <div class="alpha-counter">SIGNALS <strong id="alphaCount">0</strong></div>
     <div class="utc-clock" id="utcClock">00:00:00 UTC</div>
+    <a href="/dashboard" style="font-size:10px;letter-spacing:0.1em;color:var(--gold);text-decoration:none;border:1px solid rgba(200,164,90,0.3);padding:3px 10px;">DASHBOARD</a>
     <div class="live-dot"><div class="pulse-dot"></div>LIVE</div>
   </div>
 </div>
@@ -964,9 +965,11 @@
       <div class="bridge-node-label">DOWNSTREAM SYSTEM</div>
       <div class="bridge-node-name">VERITAS</div>
       <div class="bridge-port">PORT 5000</div>
-      <div class="bridge-status">STANDING BY</div>
+      <div class="bridge-status" id="veritas-conn-status">STANDING BY</div>
+      <div style="font-size:8px;color:var(--muted);margin:3px 0;min-height:12px;letter-spacing:0.06em" id="veritas-last-attempt"></div>
       <button class="bridge-btn" onclick="sendBridge('veritas')">SEND ALPHA BATCH →</button>
       <div class="bridge-send-status" id="veritas-status"></div>
+      <div style="font-size:7px;color:var(--muted);margin-top:4px;word-break:break-all;min-height:12px;opacity:0.7" id="veritas-payload-preview"></div>
     </div>
 
     <div class="bridge-center">
@@ -979,9 +982,11 @@
       <div class="bridge-node-label">DOWNSTREAM SYSTEM</div>
       <div class="bridge-node-name">GARUDA</div>
       <div class="bridge-port">PORT 8000</div>
-      <div class="bridge-status">STANDING BY</div>
+      <div class="bridge-status" id="garuda-conn-status">STANDING BY</div>
+      <div style="font-size:8px;color:var(--muted);margin:3px 0;min-height:12px;letter-spacing:0.06em" id="garuda-last-attempt"></div>
       <button class="bridge-btn" onclick="sendBridge('garuda')">SEND ALPHA BATCH →</button>
       <div class="bridge-send-status" id="garuda-status"></div>
+      <div style="font-size:7px;color:var(--muted);margin-top:4px;word-break:break-all;min-height:12px;opacity:0.7" id="garuda-payload-preview"></div>
     </div>
   </div>
 </div>
@@ -1089,8 +1094,10 @@
         const val = n.current_value;
         const dispVal = val > 10000 ? fmt(val, 0) : val > 100 ? fmt(val, 1) : fmt(val, 4);
 
+        const staleTag = n.stale ? `<span style="font-size:7px;letter-spacing:0.08em;padding:1px 4px;background:rgba(255,165,0,0.12);color:#ffa500;border:1px solid rgba(255,165,0,0.25);margin-left:4px;">STALE</span>` : '';
+
         return `<div class="node-cell">
-          <div class="node-name">${n.name || n.node_id}</div>
+          <div class="node-name">${n.name || n.node_id}${staleTag}</div>
           <div class="node-value">${dispVal}</div>
           <div class="node-change ${updown}">${arrow} ${Math.abs(n.pct_change).toFixed(3)}%</div>
           <div class="zscore-bar-wrap">
@@ -1293,6 +1300,31 @@
     } catch(e) {}
   }
 
+  // BRIDGE STATUS POLL
+  async function fetchBridgeStatus() {
+    try {
+      const r = await fetch('/api/bridge/status');
+      const data = await r.json();
+      ['veritas','garuda'].forEach(name => {
+        const bs = data[name];
+        if (!bs) return;
+        const connEl = document.getElementById(name + '-conn-status');
+        const attemptEl = document.getElementById(name + '-last-attempt');
+        const previewEl = document.getElementById(name + '-payload-preview');
+        if (connEl) {
+          connEl.textContent = bs.status;
+          connEl.style.color = bs.status === 'CONNECTED' ? 'var(--green)' : 'rgba(232,230,224,0.4)';
+        }
+        if (attemptEl && bs.last_attempt) {
+          attemptEl.textContent = 'LAST: ' + bs.last_attempt.replace('T',' ').substring(0,16) + ' UTC';
+        }
+        if (previewEl && bs.payload_preview) {
+          previewEl.textContent = bs.payload_preview;
+        }
+      });
+    } catch(e) {}
+  }
+
   // BRIDGE SEND
   async function sendBridge(target) {
     const statusEl = document.getElementById(target + '-status');
@@ -1305,6 +1337,7 @@
       });
       const data = await r.json();
       statusEl.textContent = '✓ ' + data.status;
+      fetchBridgeStatus();
       setTimeout(() => statusEl.textContent = '', 5000);
     } catch(e) {
       statusEl.textContent = '✗ ERROR';
@@ -1343,12 +1376,14 @@
   fetchTickerTape();
   fetchPrimaryNodes();
   fetchAlphaFeed();
+  fetchBridgeStatus();
 
   // INTERVALS
   setInterval(fetchRegime, 60000);
   setInterval(fetchTickerTape, 30000);
   setInterval(fetchPrimaryNodes, 30000);
   setInterval(fetchAlphaFeed, 15000);
+  setInterval(fetchBridgeStatus, 30000);
 </script>
 </body>
 </html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRIMAJLIS — Paper Trading Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0b0d11;
+    --surface: #0f1117;
+    --surface2: #13161c;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8e6e0;
+    --muted: rgba(232,230,224,0.4);
+    --gold: #c8a45a;
+    --green: #1ddf8a;
+    --red: #ff4a4a;
+    --blue: #4a9eff;
+    --purple: #9b6fff;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Space Mono', monospace; font-size: 12px; min-height: 100vh; }
+
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 42px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .logo { font-size: 14px; font-weight: 700; letter-spacing: 0.18em; color: var(--text); }
+  .logo span { font-size: 9px; color: var(--muted); margin-left: 12px; letter-spacing: 0.15em; }
+  .header-right { display: flex; align-items: center; gap: 20px; }
+  .back-link { font-size: 10px; color: var(--gold); letter-spacing: 0.1em; text-decoration: none; border: 1px solid rgba(200,164,90,0.3); padding: 3px 10px; }
+  .back-link:hover { background: rgba(200,164,90,0.1); }
+  .utc-clock { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  .page { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+  .section-title { font-size: 10px; letter-spacing: 0.15em; color: var(--muted); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 16px; margin-top: 28px; }
+  .section-title:first-child { margin-top: 0; }
+
+  /* SUMMARY BAR */
+  .summary-bar { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 28px; }
+  .summary-card { background: var(--surface); padding: 14px 16px; }
+  .summary-label { font-size: 8px; letter-spacing: 0.15em; color: var(--muted); margin-bottom: 6px; }
+  .summary-value { font-size: 20px; font-weight: 700; color: var(--text); }
+  .summary-value.green { color: var(--green); }
+  .summary-value.red { color: var(--red); }
+  .summary-value.gold { color: var(--gold); }
+
+  /* TABLES */
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 8px; letter-spacing: 0.12em; color: var(--muted); text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  td { font-size: 10px; padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+  tr:hover td { background: var(--surface2); }
+  .no-data { padding: 24px; text-align: center; color: var(--muted); font-size: 10px; letter-spacing: 0.1em; }
+
+  .badge { font-size: 8px; padding: 2px 6px; border-radius: 2px; font-weight: 700; letter-spacing: 0.08em; }
+  .badge-long { background: rgba(29,223,138,0.15); color: var(--green); }
+  .badge-short { background: rgba(255,74,74,0.15); color: var(--red); }
+  .badge-sell { background: rgba(155,111,255,0.15); color: var(--purple); }
+  .badge-win { background: rgba(29,223,138,0.12); color: var(--green); }
+  .badge-loss { background: rgba(255,74,74,0.12); color: var(--red); }
+  .badge-open { background: rgba(74,158,255,0.12); color: var(--blue); }
+
+  .close-btn { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 0.08em; padding: 3px 8px; background: rgba(255,74,74,0.08); border: 1px solid rgba(255,74,74,0.3); color: var(--red); cursor: pointer; }
+  .close-btn:hover { background: rgba(255,74,74,0.18); }
+
+  .pnl-pos { color: var(--green); }
+  .pnl-neg { color: var(--red); }
+
+  /* P&L CHART */
+  .chart-wrap { background: var(--surface); border: 1px solid var(--border); padding: 16px; margin-bottom: 4px; }
+  svg.pnl-chart { display: block; width: 100%; }
+
+  /* LAYER CARDS */
+  .layer-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 4px; }
+  .layer-card { background: var(--surface); border: 1px solid var(--border); padding: 14px 16px; }
+  .layer-card-name { font-size: 8px; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 8px; }
+  .layer-card-win { font-size: 22px; font-weight: 700; color: var(--green); }
+  .layer-card-sub { font-size: 9px; color: var(--muted); margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">KRIMAJLIS<span>PAPER TRADING DASHBOARD</span></div>
+  <div class="header-right">
+    <div class="utc-clock" id="utcClock">00:00:00 UTC</div>
+    <a class="back-link" href="/">← TERMINAL</a>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- SUMMARY BAR -->
+  <div class="section-title">SESSION SUMMARY</div>
+  <div class="summary-bar" id="summaryBar">
+    <div class="summary-card"><div class="summary-label">TOTAL TRADES</div><div class="summary-value gold" id="sumTotal">—</div></div>
+    <div class="summary-card"><div class="summary-label">OPEN POSITIONS</div><div class="summary-value" id="sumOpen">—</div></div>
+    <div class="summary-card"><div class="summary-label">SESSION P&amp;L</div><div class="summary-value" id="sumPnl">—</div></div>
+    <div class="summary-card"><div class="summary-label">WIN RATE</div><div class="summary-value green" id="sumWinRate">—</div></div>
+    <div class="summary-card"><div class="summary-label">BEST LAYER</div><div class="summary-value gold" style="font-size:11px;padding-top:4px" id="sumBestLayer">—</div></div>
+    <div class="summary-card"><div class="summary-label">WORST DRAWDOWN</div><div class="summary-value red" id="sumDrawdown">—</div></div>
+  </div>
+
+  <!-- OPEN POSITIONS -->
+  <div class="section-title">OPEN POSITIONS</div>
+  <div id="openTable">
+    <div class="no-data">NO OPEN POSITIONS</div>
+  </div>
+
+  <!-- P&L CURVE -->
+  <div class="section-title">CUMULATIVE P&amp;L CURVE</div>
+  <div class="chart-wrap">
+    <svg class="pnl-chart" id="pnlChart" height="180" viewBox="0 0 600 180" preserveAspectRatio="none">
+      <text x="300" y="95" text-anchor="middle" fill="rgba(232,230,224,0.2)" font-family="Space Mono" font-size="10">NO CLOSED TRADES YET</text>
+    </svg>
+  </div>
+
+  <!-- WIN RATE BY LAYER -->
+  <div class="section-title">WIN RATE BY LAYER</div>
+  <div class="layer-cards" id="layerCards">
+    <div class="layer-card"><div class="layer-card-name">TRANSMISSION LAG</div><div class="layer-card-win">—</div><div class="layer-card-sub">No data</div></div>
+    <div class="layer-card"><div class="layer-card-name">INSTITUTIONAL FLOW</div><div class="layer-card-win">—</div><div class="layer-card-sub">No data</div></div>
+    <div class="layer-card"><div class="layer-card-name">NARRATIVE VELOCITY</div><div class="layer-card-win">—</div><div class="layer-card-sub">No data</div></div>
+    <div class="layer-card"><div class="layer-card-name">SUPPLY CHAIN ECHO</div><div class="layer-card-win">—</div><div class="layer-card-sub">No data</div></div>
+    <div class="layer-card"><div class="layer-card-name">VOLATILITY SURFACE</div><div class="layer-card-win">—</div><div class="layer-card-sub">No data</div></div>
+  </div>
+
+  <!-- CLOSED TRADES -->
+  <div class="section-title">CLOSED TRADES</div>
+  <div id="closedTable">
+    <div class="no-data">NO CLOSED TRADES</div>
+  </div>
+
+</div>
+
+<script>
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getUTCHours()).padStart(2,'0');
+    const m = String(now.getUTCMinutes()).padStart(2,'0');
+    const s = String(now.getUTCSeconds()).padStart(2,'0');
+    document.getElementById('utcClock').textContent = h+':'+m+':'+s+' UTC';
+  }
+  setInterval(updateClock, 1000); updateClock();
+
+  function dirBadge(d) {
+    if (!d) return '';
+    const cls = d === 'LONG' ? 'badge-long' : d === 'SHORT' ? 'badge-short' : 'badge-sell';
+    return `<span class="badge ${cls}">${d}</span>`;
+  }
+
+  function pnlClass(v) { return v > 0 ? 'pnl-pos' : v < 0 ? 'pnl-neg' : ''; }
+  function fmtPnl(v) { return v === null || v === undefined ? '—' : (v >= 0 ? '+' : '') + v.toFixed(2) + '%'; }
+  function fmtTs(ts) { return ts ? ts.replace('T',' ').substring(0,16) : '—'; }
+
+  async function closeTrade(tradeId) {
+    if (!confirm('Close trade #' + tradeId + '?')) return;
+    const r = await fetch('/api/paper-trade/close', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({trade_id: tradeId})
+    });
+    if (r.ok) loadData();
+  }
+
+  function renderOpenTable(trades) {
+    const open = trades.filter(t => t.status === 'OPEN');
+    const el = document.getElementById('openTable');
+    if (!open.length) { el.innerHTML = '<div class="no-data">NO OPEN POSITIONS</div>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr>
+        <th>TIMESTAMP</th><th>TICKER</th><th>DIR</th><th>ENTRY</th>
+        <th>CONVICTION</th><th>LAYER</th><th>ACTION</th>
+      </tr></thead>
+      <tbody>${open.map(t => `<tr>
+        <td>${fmtTs(t.timestamp)}</td>
+        <td style="font-weight:700;color:#e8e6e0">${t.ticker || '—'}</td>
+        <td>${dirBadge(t.direction)}</td>
+        <td>${t.entry_price !== null ? t.entry_price.toFixed(2) : '—'}</td>
+        <td style="color:#c8a45a">${t.conviction ? Math.round(t.conviction*100)+'%' : '—'}</td>
+        <td style="color:rgba(232,230,224,0.5);font-size:9px">${(t.layer||'').replace(/_/g,' ')}</td>
+        <td><button class="close-btn" onclick="closeTrade(${t.trade_id})">CLOSE</button></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }
+
+  function renderClosedTable(trades) {
+    const closed = trades.filter(t => t.status === 'CLOSED');
+    const el = document.getElementById('closedTable');
+    if (!closed.length) { el.innerHTML = '<div class="no-data">NO CLOSED TRADES</div>'; return; }
+    el.innerHTML = `<table>
+      <thead><tr>
+        <th>TIMESTAMP</th><th>TICKER</th><th>DIR</th><th>ENTRY</th><th>EXIT</th>
+        <th>REALIZED P&amp;L</th><th>SESSIONS</th><th>OUTCOME</th><th>LAYER</th>
+      </tr></thead>
+      <tbody>${closed.map(t => {
+        const oc = t.outcome === 'WIN' ? 'badge-win' : 'badge-loss';
+        return `<tr>
+          <td>${fmtTs(t.timestamp)}</td>
+          <td style="font-weight:700">${t.ticker||'—'}</td>
+          <td>${dirBadge(t.direction)}</td>
+          <td>${t.entry_price !== null ? t.entry_price.toFixed(2) : '—'}</td>
+          <td>${t.exit_price !== null ? t.exit_price.toFixed(2) : '—'}</td>
+          <td class="${pnlClass(t.realized_pnl)}">${fmtPnl(t.realized_pnl)}</td>
+          <td>${t.sessions_held || '—'}</td>
+          <td><span class="badge ${oc}">${t.outcome||'—'}</span></td>
+          <td style="font-size:9px;color:rgba(232,230,224,0.5)">${(t.layer||'').replace(/_/g,' ')}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }
+
+  function renderPnlChart(curve) {
+    const svg = document.getElementById('pnlChart');
+    if (!curve || !curve.length) {
+      svg.innerHTML = '<text x="300" y="95" text-anchor="middle" fill="rgba(232,230,224,0.2)" font-family="Space Mono" font-size="10">NO CLOSED TRADES YET</text>';
+      return;
+    }
+    const W = 600, H = 180, pad = 20;
+    const minV = Math.min(0, ...curve), maxV = Math.max(0, ...curve);
+    const range = (maxV - minV) || 1;
+    const xStep = (W - pad*2) / Math.max(curve.length - 1, 1);
+    const yScale = v => pad + (H - pad*2) * (1 - (v - minV) / range);
+    const y0 = yScale(0);
+
+    const pts = curve.map((v, i) => `${pad + i * xStep},${yScale(v)}`).join(' ');
+    const fillPts = `${pad},${y0} ` + pts + ` ${pad + (curve.length-1)*xStep},${y0}`;
+
+    const isPos = curve[curve.length-1] >= 0;
+    const lineColor = isPos ? '#1ddf8a' : '#ff4a4a';
+    const fillColor = isPos ? 'rgba(29,223,138,0.08)' : 'rgba(255,74,74,0.08)';
+
+    svg.innerHTML = `
+      <line x1="${pad}" y1="${y0}" x2="${W-pad}" y2="${y0}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+      <polygon points="${fillPts}" fill="${fillColor}"/>
+      <polyline points="${pts}" fill="none" stroke="${lineColor}" stroke-width="1.5"/>
+      ${curve.map((v,i) => `<circle cx="${pad+i*xStep}" cy="${yScale(v)}" r="2.5" fill="${v>=0?'#1ddf8a':'#ff4a4a'}"/>`).join('')}
+      <text x="${pad}" y="${H-4}" fill="rgba(232,230,224,0.3)" font-family="Space Mono" font-size="8">T1</text>
+      <text x="${W-pad-8}" y="${H-4}" fill="rgba(232,230,224,0.3)" font-family="Space Mono" font-size="8">T${curve.length}</text>
+      <text x="${pad}" y="${yScale(maxV)-4}" fill="rgba(232,230,224,0.3)" font-family="Space Mono" font-size="8">${maxV>=0?'+':''}${maxV.toFixed(1)}%</text>
+    `;
+  }
+
+  const LAYER_ORDER = ['TRANSMISSION_LAG','INSTITUTIONAL_FLOW','NARRATIVE_VELOCITY','SUPPLY_CHAIN_ECHO','VOLATILITY_SURFACE'];
+  function renderLayerCards(breakdown) {
+    const el = document.getElementById('layerCards');
+    const map = {};
+    (breakdown || []).forEach(l => { map[l.layer] = l; });
+    el.innerHTML = LAYER_ORDER.map(key => {
+      const d = map[key];
+      const name = key.replace(/_/g,' ');
+      if (!d) return `<div class="layer-card"><div class="layer-card-name">${name}</div><div class="layer-card-win" style="color:rgba(232,230,224,0.3)">—</div><div class="layer-card-sub">No trades</div></div>`;
+      const col = d.win_rate >= 60 ? '#1ddf8a' : d.win_rate >= 40 ? '#c8a45a' : '#ff4a4a';
+      return `<div class="layer-card">
+        <div class="layer-card-name">${name}</div>
+        <div class="layer-card-win" style="color:${col}">${d.win_rate}%</div>
+        <div class="layer-card-sub">${d.signal_count} trades · avg ${d.avg_pnl >= 0 ? '+' : ''}${d.avg_pnl.toFixed(2)}%</div>
+      </div>`;
+    }).join('');
+  }
+
+  async function loadData() {
+    try {
+      const [tradesR, summR] = await Promise.all([
+        fetch('/api/paper-trades'), fetch('/api/paper-trades/summary')
+      ]);
+      const trades = await tradesR.json();
+      const summ = await summR.json();
+
+      document.getElementById('sumTotal').textContent = summ.total_trades || 0;
+      document.getElementById('sumOpen').textContent = summ.open_count || 0;
+      const pnlEl = document.getElementById('sumPnl');
+      pnlEl.textContent = (summ.session_pnl >= 0 ? '+' : '') + (summ.session_pnl || 0).toFixed(2) + '%';
+      pnlEl.className = 'summary-value ' + (summ.session_pnl >= 0 ? 'green' : 'red');
+      document.getElementById('sumWinRate').textContent = (summ.win_rate || 0) + '%';
+      document.getElementById('sumBestLayer').textContent = (summ.best_layer || '—').replace(/_/g,' ');
+      const ddEl = document.getElementById('sumDrawdown');
+      ddEl.textContent = (summ.worst_drawdown || 0).toFixed(2) + '%';
+
+      renderOpenTable(trades);
+      renderClosedTable(trades);
+      renderPnlChart(summ.pnl_curve);
+      renderLayerCards(summ.layer_breakdown);
+    } catch(e) { console.error(e); }
+  }
+
+  loadData();
+  setInterval(loadData, 10000);
+</script>
+</body>
+</html>
