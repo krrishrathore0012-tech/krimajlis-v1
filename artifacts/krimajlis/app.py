@@ -51,17 +51,17 @@ TICKER_MAP = {
 }
 
 TICKER_FALLBACKS = {
-    "SPX": 5200.0,
-    "NDX": 18500.0,
-    "DAX": 18200.0,
-    "NIFTY": 22500.0,
-    "WTI": 78.5,
-    "Gold": 2340.0,
-    "DXY": 104.5,
-    "VIX": 18.5,
-    "HYG": 79.2,
-    "BTC": 68500.0,
-    "USDINR": 83.2,
+    "SPX": 6582.0,
+    "NDX": 24045.0,
+    "DAX": 23111.0,
+    "NIFTY": 22700.0,
+    "WTI": 112.0,
+    "Gold": 4700.0,
+    "DXY": 100.0,
+    "VIX": 23.9,
+    "HYG": 79.5,
+    "BTC": 67200.0,
+    "USDINR": 92.7,
 }
 
 NODE_TICKER_MAP = {
@@ -74,26 +74,30 @@ NODE_TICKER_MAP = {
 }
 
 
-def safe_fetch_price(ticker_symbol, fallback):
+def fetch_price_with_change(ticker_symbol, fallback_price, fallback_pct=0.0):
     if not YFINANCE_AVAILABLE:
-        return fallback
+        return fallback_price, fallback_pct
     try:
         t = yf.Ticker(ticker_symbol)
-        hist = t.history(period="2d", interval="1d")
-        if hist is not None and not hist.empty and len(hist) >= 1:
-            return float(hist["Close"].iloc[-1])
-        return fallback
+        hist = t.history(period="2d", interval="1h")
+        if hist is None or hist.empty:
+            return fallback_price, fallback_pct
+        current = float(hist["Close"].iloc[-1])
+        previous = float(hist["Close"].iloc[-2]) if len(hist) > 1 else current
+        pct_change = ((current - previous) / previous) * 100 if previous != 0 else 0.0
+        return current, round(pct_change, 4)
     except Exception:
-        return fallback
+        return fallback_price, fallback_pct
 
 
 def refresh_primary_nodes():
     nodes = {}
     for node_id, yf_ticker in NODE_TICKER_MAP.items():
         fallback = NODE_DEFAULTS[node_id]["base"]
-        price = safe_fetch_price(yf_ticker, fallback)
+        price, pct = fetch_price_with_change(yf_ticker, fallback)
         engine.update_node(node_id, price)
         metrics = engine.get_node_metrics(node_id)
+        metrics["pct_change"] = round(pct, 4)
         nodes[node_id] = metrics
 
     for node_id in NODE_DEFAULTS:
@@ -110,9 +114,7 @@ def refresh_ticker_tape():
     tape = {}
     for label, yf_ticker in TICKER_MAP.items():
         fallback = TICKER_FALLBACKS.get(label, 100.0)
-        price = safe_fetch_price(yf_ticker, fallback)
-        prev = state["ticker_tape"].get(label, {}).get("price", price * (1 + rng.gauss(0, 0.003)))
-        pct = ((price - prev) / abs(prev) * 100) if prev != 0 else 0.0
+        price, pct = fetch_price_with_change(yf_ticker, fallback)
         tape[label] = {
             "label": label,
             "price": round(price, 4),

@@ -14,6 +14,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 4,
         "lag_unit": "hours",
         "accuracy": 0.78,
+        "expected_move_pct": 1.2,
         "loophole_type": "TRANSMISSION_LAG",
         "geography": "Global",
         "trigger_direction": "falls",
@@ -29,6 +30,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 6,
         "lag_unit": "hours",
         "accuracy": 0.71,
+        "expected_move_pct": 0.8,
         "loophole_type": "TRANSMISSION_LAG",
         "geography": "EM",
         "trigger_direction": "falls",
@@ -44,6 +46,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 2,
         "lag_unit": "sessions",
         "accuracy": 0.71,
+        "expected_move_pct": 0.6,
         "loophole_type": "SUPPLY_CHAIN_ECHO",
         "geography": "US",
         "trigger_direction": "falls",
@@ -59,6 +62,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 15,
         "lag_unit": "sessions",
         "accuracy": 0.67,
+        "expected_move_pct": 0.5,
         "loophole_type": "SUPPLY_CHAIN_ECHO",
         "geography": "US",
         "trigger_direction": "falls",
@@ -74,6 +78,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 1,
         "lag_unit": "sessions",
         "accuracy": 0.74,
+        "expected_move_pct": 0.7,
         "loophole_type": "TRANSMISSION_LAG",
         "geography": "India",
         "trigger_direction": "rises",
@@ -89,6 +94,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 6,
         "lag_unit": "hours",
         "accuracy": 0.69,
+        "expected_move_pct": 0.9,
         "loophole_type": "INSTITUTIONAL_FLOW",
         "geography": "EM",
         "trigger_direction": "spikes",
@@ -104,6 +110,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 3,
         "lag_unit": "hours",
         "accuracy": 0.76,
+        "expected_move_pct": 1.2,
         "loophole_type": "TRANSMISSION_LAG",
         "geography": "Global",
         "trigger_direction": "spikes",
@@ -119,6 +126,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 0,
         "lag_unit": "sessions",
         "accuracy": 0.84,
+        "expected_move_pct": 2.5,
         "loophole_type": "VOLATILITY_SURFACE",
         "geography": "US",
         "trigger_direction": "spikes",
@@ -134,6 +142,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 0,
         "lag_unit": "sessions",
         "accuracy": 0.82,
+        "expected_move_pct": 1.5,
         "loophole_type": "TRANSMISSION_LAG",
         "geography": "US",
         "trigger_direction": "widens",
@@ -149,6 +158,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 2,
         "lag_unit": "hours",
         "accuracy": 0.88,
+        "expected_move_pct": 0.8,
         "loophole_type": "TRANSMISSION_LAG",
         "geography": "US",
         "trigger_direction": "widens",
@@ -164,6 +174,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 5,
         "lag_unit": "sessions",
         "accuracy": 0.74,
+        "expected_move_pct": 1.1,
         "loophole_type": "INSTITUTIONAL_FLOW",
         "geography": "US",
         "trigger_direction": "falls",
@@ -179,6 +190,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 8,
         "lag_unit": "sessions",
         "accuracy": 0.69,
+        "expected_move_pct": 1.0,
         "loophole_type": "INSTITUTIONAL_FLOW",
         "geography": "US",
         "trigger_direction": "falls",
@@ -194,6 +206,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 12,
         "lag_unit": "sessions",
         "accuracy": 0.66,
+        "expected_move_pct": 0.7,
         "loophole_type": "SUPPLY_CHAIN_ECHO",
         "geography": "Global",
         "trigger_direction": "falls",
@@ -209,6 +222,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 5,
         "lag_unit": "sessions",
         "accuracy": 0.72,
+        "expected_move_pct": 0.9,
         "loophole_type": "SUPPLY_CHAIN_ECHO",
         "geography": "Global",
         "trigger_direction": "falls",
@@ -224,6 +238,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 2,
         "lag_unit": "sessions",
         "accuracy": 0.79,
+        "expected_move_pct": 1.8,
         "loophole_type": "TRANSMISSION_LAG",
         "geography": "Global",
         "trigger_direction": "rises",
@@ -239,6 +254,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 1,
         "lag_unit": "sessions",
         "accuracy": 0.77,
+        "expected_move_pct": 0.7,
         "loophole_type": "NARRATIVE_VELOCITY",
         "geography": "India",
         "trigger_direction": "falls",
@@ -254,6 +270,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 8,
         "lag_unit": "hours",
         "accuracy": 0.81,
+        "expected_move_pct": 0.6,
         "loophole_type": "INSTITUTIONAL_FLOW",
         "geography": "Asia",
         "trigger_direction": "falls",
@@ -269,6 +286,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 3,
         "lag_unit": "sessions",
         "accuracy": 0.73,
+        "expected_move_pct": 1.3,
         "loophole_type": "SUPPLY_CHAIN_ECHO",
         "geography": "China",
         "trigger_direction": "rises",
@@ -284,6 +302,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 2,
         "lag_unit": "sessions",
         "accuracy": 0.76,
+        "expected_move_pct": 0.5,
         "loophole_type": "TRANSMISSION_LAG",
         "geography": "Australia",
         "trigger_direction": "rises",
@@ -299,6 +318,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 3,
         "lag_unit": "sessions",
         "accuracy": 0.71,
+        "expected_move_pct": 0.6,
         "loophole_type": "INSTITUTIONAL_FLOW",
         "geography": "US",
         "trigger_direction": "widens",
@@ -314,6 +334,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 6,
         "lag_unit": "hours",
         "accuracy": 0.73,
+        "expected_move_pct": 0.9,
         "loophole_type": "TRANSMISSION_LAG",
         "geography": "Global",
         "trigger_direction": "falls",
@@ -329,6 +350,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 8,
         "lag_unit": "sessions",
         "accuracy": 0.77,
+        "expected_move_pct": 2.0,
         "loophole_type": "VOLATILITY_SURFACE",
         "geography": "US",
         "trigger_direction": "above 30",
@@ -344,6 +366,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 3,
         "lag_unit": "sessions",
         "accuracy": 0.69,
+        "expected_move_pct": 1.4,
         "loophole_type": "NARRATIVE_VELOCITY",
         "geography": "US",
         "trigger_direction": "tariff narrative",
@@ -359,6 +382,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 3,
         "lag_unit": "sessions",
         "accuracy": 0.72,
+        "expected_move_pct": 0.6,
         "loophole_type": "NARRATIVE_VELOCITY",
         "geography": "US",
         "trigger_direction": "CB communication",
@@ -374,6 +398,7 @@ CAUSAL_RELATIONSHIPS = [
         "lag_max": 3,
         "lag_unit": "sessions",
         "accuracy": 0.74,
+        "expected_move_pct": 0.8,
         "loophole_type": "INSTITUTIONAL_FLOW",
         "geography": "US",
         "trigger_direction": "falls",
@@ -382,36 +407,36 @@ CAUSAL_RELATIONSHIPS = [
 ]
 
 NODE_DEFAULTS = {
-    "DXY": {"name": "US Dollar Index", "base": 104.5, "vol": 0.3},
-    "Gold": {"name": "Gold Spot", "base": 2340.0, "vol": 8.0},
-    "WTI": {"name": "WTI Crude", "base": 78.5, "vol": 1.2},
-    "VIX": {"name": "VIX Fear Index", "base": 18.5, "vol": 0.8},
-    "SPX": {"name": "S&P 500", "base": 5200.0, "vol": 25.0},
-    "NIFTY": {"name": "Nifty 50", "base": 22500.0, "vol": 120.0},
-    "IG Spread": {"name": "IG Credit Spread", "base": 95.0, "vol": 2.0},
-    "HY Spread": {"name": "HY Credit Spread", "base": 385.0, "vol": 8.0},
-    "Real Yield": {"name": "US 10Y Real Yield", "base": 2.1, "vol": 0.05},
-    "China PMI": {"name": "China Caixin PMI", "base": 51.2, "vol": 0.3},
-    "BDI": {"name": "Baltic Dry Index", "base": 1850.0, "vol": 45.0},
-    "EM FX": {"name": "EM Currency Basket", "base": 100.0, "vol": 0.4},
+    "DXY": {"name": "US Dollar Index", "base": 100.0, "vol": 0.3},
+    "Gold": {"name": "Gold Spot", "base": 4700.0, "vol": 15.0},
+    "WTI": {"name": "WTI Crude", "base": 112.0, "vol": 1.5},
+    "VIX": {"name": "VIX Fear Index", "base": 24.0, "vol": 0.8},
+    "SPX": {"name": "S&P 500", "base": 6580.0, "vol": 30.0},
+    "NIFTY": {"name": "Nifty 50", "base": 22700.0, "vol": 120.0},
+    "IG Spread": {"name": "IG Credit Spread", "base": 96.0, "vol": 2.0},
+    "HY Spread": {"name": "HY Credit Spread", "base": 396.0, "vol": 8.0},
+    "Real Yield": {"name": "US 10Y Real Yield", "base": 2.15, "vol": 0.05},
+    "China PMI": {"name": "China Caixin PMI", "base": 50.4, "vol": 0.3},
+    "BDI": {"name": "Baltic Dry Index", "base": 1420.0, "vol": 40.0},
+    "EM FX": {"name": "EM Currency Basket", "base": 97.5, "vol": 0.5},
 }
 
 REGIME_DEFAULTS = {
-    "growth_momentum": {"label": "EXPANDING", "score": 62, "direction": "up"},
-    "inflation_trajectory": {"label": "COOLING", "score": 38, "direction": "down"},
-    "credit_stress": {"label": "MODERATE", "score": 44, "direction": "neutral"},
-    "dollar_cycle": {"label": "PEAK", "score": 71, "direction": "down"},
-    "risk_appetite": {"label": "RISK-ON", "score": 65, "direction": "up"},
-    "commodity_cycle": {"label": "RECOVERY", "score": 55, "direction": "up"},
+    "growth_momentum": {"label": "CONTRACTION", "score": 28, "direction": "down"},
+    "inflation_trajectory": {"label": "DISINFLATING", "score": 42, "direction": "down"},
+    "credit_stress": {"label": "ELEVATED", "score": 71, "direction": "up"},
+    "dollar_cycle": {"label": "WEAKENING", "score": 38, "direction": "down"},
+    "risk_appetite": {"label": "RISK_OFF", "score": 12, "direction": "down"},
+    "commodity_cycle": {"label": "DEMAND_SHOCK", "score": 22, "direction": "down"},
 }
 
 REGIME_LABELS = {
-    "growth_momentum": ["CONTRACTING", "SLOWING", "STABLE", "EXPANDING", "ACCELERATING"],
-    "inflation_trajectory": ["DEFLATING", "COOLING", "STABLE", "RISING", "SURGING"],
-    "credit_stress": ["BENIGN", "LOW", "MODERATE", "ELEVATED", "CRITICAL"],
+    "growth_momentum": ["DEEP_CONTRACTION", "CONTRACTION", "STABLE", "EXPANDING", "ACCELERATING"],
+    "inflation_trajectory": ["DEFLATING", "DISINFLATING", "STABLE", "RISING", "SURGING"],
+    "credit_stress": ["BENIGN", "LOW", "ELEVATED", "HIGH_STRESS", "CRITICAL"],
     "dollar_cycle": ["TROUGH", "WEAKENING", "NEUTRAL", "STRENGTHENING", "PEAK"],
-    "risk_appetite": ["RISK-OFF", "CAUTIOUS", "NEUTRAL", "RISK-ON", "EUPHORIC"],
-    "commodity_cycle": ["BUST", "TROUGH", "RECOVERY", "EXPANSION", "BOOM"],
+    "risk_appetite": ["RISK_OFF", "CAUTIOUS", "NEUTRAL", "RISK-ON", "EUPHORIC"],
+    "commodity_cycle": ["DEMAND_SHOCK", "TROUGH", "RECOVERY", "EXPANSION", "BOOM"],
 }
 
 
@@ -495,9 +520,10 @@ class KrimajlisEngine:
             return 1.1
         return 1.0
 
-    def _compute_gap_to_theoretical(self, rel, z_score):
-        base_gap = abs(z_score) * rel["accuracy"] * 100 * self.rng.uniform(0.6, 1.4)
-        return round(min(base_gap, 24.9), 2)
+    def _compute_gap_to_theoretical(self, rel, z_score, regime_multiplier=1.0):
+        gap = abs(z_score) * rel["accuracy"] * rel["expected_move_pct"] * regime_multiplier
+        gap *= self.rng.uniform(0.85, 1.15)
+        return round(min(max(gap, 0.1), 9.99), 2)
 
     def _get_freshness(self, trigger_time):
         now = time.time()
@@ -534,14 +560,15 @@ class KrimajlisEngine:
             effective_z = z_score if abs(z_score) > 0.5 else self.rng.uniform(0.5, 1.8) * (1 if self.rng.random() > 0.5 else -1)
 
             regime_mult = self._regime_alignment(rel, regime_state)
-            conviction = min(0.99, abs(effective_z) * rel["accuracy"] * regime_mult * self.rng.uniform(0.85, 1.15))
-            conviction = max(0.30, conviction)
+            raw_conviction = (abs(effective_z) / 3.0) * rel["accuracy"] * regime_mult
+            raw_conviction *= self.rng.uniform(0.90, 1.10)
+            conviction = min(0.97, max(0.35, raw_conviction))
 
             if rel["id"] not in self.trigger_times:
                 self.trigger_times[rel["id"]] = now - self.rng.uniform(0, 90)
             freshness = self._get_freshness(self.trigger_times[rel["id"]])
 
-            gap = self._compute_gap_to_theoretical(rel, effective_z)
+            gap = self._compute_gap_to_theoretical(rel, effective_z, regime_mult)
             expected_sessions = rel["lag_min"] + self.rng.randint(0, max(1, rel["lag_max"] - rel["lag_min"]))
             causal_chain = self._build_causal_chain(rel, effective_z)
 
@@ -574,7 +601,7 @@ class KrimajlisEngine:
         for rel in CAUSAL_RELATIONSHIPS:
             if rel["id"] == signal_id:
                 z_score = self.compute_zscore(rel["trigger_node"])
-                gap = self._compute_gap_to_theoretical(rel, z_score)
+                gap = self._compute_gap_to_theoretical(rel, z_score, regime_multiplier=1.0)
                 chain_nodes = [
                     {
                         "node": rel["trigger_node"],
