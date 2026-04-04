@@ -296,14 +296,15 @@
 
   .signal-row {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 10px 16px;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 16px;
     border-bottom: 1px solid var(--border);
     border-left: 2px solid transparent;
     cursor: pointer;
     transition: background 0.15s;
     animation: slideDown 0.3s ease forwards;
+    min-width: 0;
   }
 
   @keyframes slideDown {
@@ -317,35 +318,36 @@
   .signal-row.selected { background: var(--surface2); border-left-color: var(--gold); }
 
   .signal-ticker {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--text);
-    min-width: 80px;
+    min-width: 62px;
+    flex-shrink: 0;
     line-height: 1.2;
   }
 
   .signal-ticker-sub {
-    font-size: 9px;
+    font-size: 8px;
     color: var(--muted);
-    margin-top: 2px;
-  }
-
-  .signal-body {
-    flex: 1;
+    margin-top: 1px;
   }
 
   .signal-rationale {
-    font-size: 10px;
-    color: var(--muted);
-    line-height: 1.5;
-    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 500px;
+    font-size: 11px;
+    color: rgba(232,230,224,0.55);
+    flex: 1;
+    min-width: 0;
   }
 
   .signal-meta {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 6px;
+    flex-shrink: 0;
   }
 
   .dir-badge {
@@ -1134,19 +1136,16 @@
       const convColor = convPct >= 80 ? 'var(--green)' : convPct >= 60 ? 'var(--gold)' : 'var(--muted)';
 
       return `<div class="signal-row ${fresh} ${selected}" data-signal-id="${s.signal_id}" onclick="selectSignal(this.dataset.signalId, this)">
-        <div>
-          <div class="signal-ticker">${s.ticker}</div>
+        <div class="signal-ticker">
+          ${s.ticker}
           <div class="signal-ticker-sub">${s.geography}</div>
         </div>
-        <div class="signal-body">
-          <div class="signal-rationale">${s.rationale}</div>
-          <div class="signal-meta">
-            <span class="dir-badge dir-${s.direction}">${s.direction}</span>
-            <span class="loophole-tag lt-${s.loophole_type}">${s.loophole_type.replace(/_/g,' ')}</span>
-            <span class="gap-tag">GAP ${s.gap_to_theoretical}%</span>
-            <span class="gap-tag">${s.expected_reversion_sessions}s rev</span>
-            ${s.regime_alignment ? '<span style="font-size:9px;color:var(--green)">✓ ALIGNED</span>' : ''}
-          </div>
+        <div class="signal-rationale" title="${s.rationale}">${s.rationale}</div>
+        <div class="signal-meta">
+          <span class="dir-badge dir-${s.direction}">${s.direction}</span>
+          <span class="loophole-tag lt-${s.loophole_type}">${s.loophole_type.replace(/_/g,' ')}</span>
+          <span class="gap-tag">GAP ${s.gap_to_theoretical}%</span>
+          ${s.regime_alignment ? '<span style="font-size:9px;color:var(--green)">✓</span>' : ''}
         </div>
         <div class="conviction-pct" style="color:${convColor}">${convPct}%</div>
         <button class="paper-btn" onclick="event.stopPropagation();paperTrade(this,'${s.signal_id}','${s.ticker}','${s.direction}',${s.conviction},'${s.loophole_type}')">PAPER</button>
