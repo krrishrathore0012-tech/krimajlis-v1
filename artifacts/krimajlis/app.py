@@ -86,6 +86,41 @@ NODE_TICKER_MAP = {
     "NIFTY": "^NSEI",
 }
 
+PAPER_TICKER_MAP = {
+    "SPY":      "SPY",
+    "HYG":      "HYG",
+    "TLT":      "TLT",
+    "EWJ":      "EWJ",
+    "XME":      "XME",
+    "KBE":      "KBE",
+    "BOAT":     "BOAT",
+    "GLD":      "GLD",
+    "USO":      "USO",
+    "UUP":      "UUP",
+    "SHY":      "SHY",
+    "LQD":      "LQD",
+    "EMB":      "EMB",
+    "AUDUSD=X": "AUDUSD=X",
+    "USDINR=X": "USDINR=X",
+    "EURUSD=X": "EURUSD=X",
+    "^GSPC":    "^GSPC",
+    "^NDX":     "^NDX",
+    "^VIX":     "^VIX",
+    "^NSEI":    "^NSEI",
+    "CL=F":     "CL=F",
+    "GC=F":     "GC=F",
+    "DX-Y.NYB": "DX-Y.NYB",
+}
+
+NODE_PROXY_MAP = {
+    "^NSEI":    ("NIFTY", 1.0),
+    "^GSPC":    ("SPX",   1.0),
+    "^VIX":     ("VIX",   1.0),
+    "GC=F":     ("Gold",  1.0),
+    "CL=F":     ("WTI",   1.0),
+    "DX-Y.NYB": ("DXY",   1.0),
+}
+
 STALE_THRESHOLD_HOURS = 6
 
 
@@ -221,14 +256,50 @@ def regime_thread():
 
 
 def _get_entry_price(ticker):
+    if not ticker:
+        return 100.0
+    t_upper = ticker.upper()
+
+    # Tier 1a — primary nodes by node_id (exact case-insensitive match)
     nodes = state.get("primary_nodes", {})
     for node_id, metrics in nodes.items():
-        if node_id.upper() == ticker.upper() or metrics.get("id", "") == ticker:
-            return metrics.get("current", 100.0)
+        if node_id.upper() == t_upper:
+            val = metrics.get("current_value") or metrics.get("current")
+            if val:
+                return float(val)
+
+    # Tier 1b — node proxy map (e.g. "^GSPC" → SPX node)
+    if ticker in NODE_PROXY_MAP:
+        node_id, mult = NODE_PROXY_MAP[ticker]
+        m = nodes.get(node_id, {})
+        val = m.get("current_value") or m.get("current")
+        if val:
+            return round(float(val) * mult, 4)
+
+    # Tier 2 — ticker tape (covers HYG, BTC, USDINR, etc.)
     tape = state.get("ticker_tape", {})
     for label, data in tape.items():
-        if label.upper() == ticker.upper():
-            return data.get("price", 100.0)
+        if label.upper() == t_upper:
+            price = data.get("price")
+            if price:
+                return float(price)
+
+    # Tier 3 — look up yfinance symbol via PAPER_TICKER_MAP then fetch live
+    yf_sym = PAPER_TICKER_MAP.get(ticker) or PAPER_TICKER_MAP.get(ticker.upper())
+    if yf_sym is None:
+        yf_sym = ticker
+    if YFINANCE_AVAILABLE:
+        try:
+            t_obj = yf.Ticker(yf_sym)
+            hist = t_obj.history(period="1d", interval="5m")
+            if hist is not None and not hist.empty:
+                price = float(hist["Close"].iloc[-1])
+                if price > 0:
+                    return round(price, 4)
+        except Exception:
+            pass
+
+    # Tier 4 — fallback
     return 100.0
 
 
