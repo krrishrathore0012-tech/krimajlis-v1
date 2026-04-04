@@ -378,9 +378,29 @@
   .conviction-pct {
     font-size: 10px;
     font-weight: 700;
-    margin-left: auto;
     min-width: 42px;
     text-align: right;
+  }
+
+  .paper-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    padding: 3px 6px;
+    background: rgba(240,185,11,0.08);
+    border: 1px solid rgba(240,185,11,0.3);
+    color: var(--gold);
+    cursor: pointer;
+    white-space: nowrap;
+    margin-left: 8px;
+    transition: background 0.15s;
+  }
+  .paper-btn:hover { background: rgba(240,185,11,0.2); }
+  .paper-btn.logged {
+    background: rgba(29,223,138,0.15);
+    border-color: rgba(29,223,138,0.4);
+    color: var(--green);
+    pointer-events: none;
   }
 
   .gap-tag {
@@ -1109,7 +1129,7 @@
       const convPct = Math.round(s.conviction * 100);
       const convColor = convPct >= 80 ? 'var(--green)' : convPct >= 60 ? 'var(--gold)' : 'var(--muted)';
 
-      return `<div class="signal-row ${fresh} ${selected}" onclick="selectSignal('${s.signal_id}',this)">
+      return `<div class="signal-row ${fresh} ${selected}" data-signal-id="${s.signal_id}" onclick="selectSignal(this.dataset.signalId, this)">
         <div>
           <div class="signal-ticker">${s.ticker}</div>
           <div class="signal-ticker-sub">${s.geography}</div>
@@ -1125,6 +1145,7 @@
           </div>
         </div>
         <div class="conviction-pct" style="color:${convColor}">${convPct}%</div>
+        <button class="paper-btn" onclick="event.stopPropagation();paperTrade(this,'${s.signal_id}','${s.ticker}','${s.direction}',${s.conviction},'${s.loophole_type}')">PAPER</button>
       </div>`;
     }).join('');
 
@@ -1175,10 +1196,33 @@
     }
   }
 
+  // PAPER TRADE
+  async function paperTrade(btn, signalId, ticker, direction, conviction, layer) {
+    try {
+      const r = await fetch('/api/paper-trade', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({signal_id: signalId, ticker, direction, conviction, alpha_layer: layer})
+      });
+      const d = await r.json();
+      if (d.status === 'logged') {
+        const orig = btn.textContent;
+        btn.textContent = 'POSITION LOGGED';
+        btn.classList.add('logged');
+        setTimeout(() => {
+          btn.textContent = orig;
+          btn.classList.remove('logged');
+        }, 2000);
+      }
+    } catch(e) {}
+  }
+
   // RENDER CAUSAL CHAIN
   function renderCausalChain(chain) {
     const meta = document.getElementById('causalMeta');
-    meta.textContent = chain.trigger_node + ' → ' + chain.downstream_instrument;
+    const loopLabel = (chain.loophole_type || '').replace(/_/g, ' ');
+    const ticker = chain.downstream_ticker || chain.downstream_instrument;
+    meta.textContent = chain.trigger_node + ' → ' + ticker + ' · ' + loopLabel;
 
     const nodesHtml = chain.chain_nodes.map((n, i) => {
       const roleColor = n.role === 'TRIGGER' ? 'var(--red)' : n.role === 'TARGET' ? 'var(--green)' : 'var(--blue)';

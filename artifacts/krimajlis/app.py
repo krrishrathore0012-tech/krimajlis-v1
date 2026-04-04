@@ -3,6 +3,7 @@ import time
 import threading
 import random
 import math
+from datetime import datetime
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 
@@ -23,6 +24,7 @@ from krimajlis_engine import KrimajlisEngine, NODE_DEFAULTS, REGIME_DEFAULTS, RE
 app = Flask(__name__)
 CORS(app)
 
+paper_trades = []
 engine = KrimajlisEngine()
 rng = random.Random(int(time.time()))
 
@@ -306,6 +308,27 @@ def bridge_garuda():
             "regime_snapshot": state["regime"],
         },
     })
+
+
+@app.route("/api/paper-trade", methods=["POST"])
+def paper_trade():
+    data = request.get_json(silent=True) or {}
+    trade = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "signal_id": data.get("signal_id"),
+        "ticker": data.get("ticker"),
+        "direction": data.get("direction"),
+        "conviction": data.get("conviction"),
+        "entry_price": data.get("current_price"),
+        "layer": data.get("alpha_layer"),
+    }
+    paper_trades.append(trade)
+    return jsonify({"status": "logged", "trade_id": len(paper_trades), "trade": trade})
+
+
+@app.route("/api/paper-trades", methods=["GET"])
+def get_paper_trades():
+    return jsonify(paper_trades)
 
 
 if __name__ == "__main__":
