@@ -114,6 +114,7 @@ PAPER_TICKER_MAP = {
 
 NODE_PROXY_MAP = {
     "^NSEI":    ("NIFTY", 1.0),
+    "^MSEI":    ("NIFTY", 1.0),
     "^GSPC":    ("SPX",   1.0),
     "^VIX":     ("VIX",   1.0),
     "GC=F":     ("Gold",  1.0),
@@ -269,8 +270,9 @@ def _get_entry_price(ticker):
                 return float(val)
 
     # Tier 1b — node proxy map (e.g. "^GSPC" → SPX node)
-    if ticker in NODE_PROXY_MAP:
-        node_id, mult = NODE_PROXY_MAP[ticker]
+    proxy_key = ticker if ticker in NODE_PROXY_MAP else t_upper if t_upper in NODE_PROXY_MAP else None
+    if proxy_key:
+        node_id, mult = NODE_PROXY_MAP[proxy_key]
         m = nodes.get(node_id, {})
         val = m.get("current_value") or m.get("current")
         if val:
