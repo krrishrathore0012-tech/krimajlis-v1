@@ -492,62 +492,66 @@
 
   .chain-flow {
     display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+  }
+
+  .chain-step {
+    display: flex;
     align-items: center;
-    gap: 0;
-    margin-bottom: 16px;
-    overflow-x: auto;
-    padding-bottom: 4px;
+    gap: 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
   }
 
-  .chain-node {
-    flex-shrink: 0;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 8px 12px;
-    text-align: center;
-    min-width: 90px;
+  .chain-step-node {
+    background: #13161c;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 5px;
+    padding: 6px 10px;
+    flex: 1;
+    color: #e8e6e0;
   }
 
-  .chain-node-role {
+  .chain-step-node.trigger-node {
+    border-color: #c8a45a;
+    color: #c8a45a;
+  }
+
+  .chain-step-node.target-node {
+    border-color: #1ddf8a;
+    color: #1ddf8a;
+  }
+
+  .chain-step-node-label {
     font-size: 8px;
-    color: var(--muted);
     letter-spacing: 0.12em;
     text-transform: uppercase;
+    opacity: 0.55;
     margin-bottom: 2px;
   }
 
-  .chain-node-name {
+  .chain-step-node-name {
     font-size: 11px;
     font-weight: 700;
-    color: var(--text);
   }
 
-  .chain-node-desc {
+  .chain-step-node-desc {
     font-size: 9px;
-    color: var(--muted);
+    opacity: 0.65;
     margin-top: 2px;
+    line-height: 1.4;
   }
 
-  .chain-arrow {
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0 8px;
-    color: var(--muted);
-    font-size: 9px;
-  }
-
-  .chain-arrow-line {
-    font-size: 14px;
-    color: var(--gold);
-  }
-
-  .chain-arrow-lag {
-    font-size: 8px;
-    color: var(--muted);
+  .chain-step-arrow {
+    color: rgba(232,230,224,0.3);
+    font-size: 10px;
     white-space: nowrap;
+    flex-shrink: 0;
+    padding: 0 4px;
+    letter-spacing: 0.06em;
   }
 
   .chain-stats {
@@ -1224,23 +1228,21 @@
     const ticker = chain.downstream_ticker || chain.downstream_instrument;
     meta.textContent = chain.trigger_node + ' → ' + ticker + ' · ' + loopLabel;
 
-    const nodesHtml = chain.chain_nodes.map((n, i) => {
-      const roleColor = n.role === 'TRIGGER' ? 'var(--red)' : n.role === 'TARGET' ? 'var(--green)' : 'var(--blue)';
-      const parts = [
-        `<div class="chain-node">
-          <div class="chain-node-role" style="color:${roleColor}">${n.role}</div>
-          <div class="chain-node-name">${n.node}</div>
-          <div class="chain-node-desc">${n.description || ''}</div>
-        </div>`
-      ];
-      if (i < chain.chain_nodes.length - 1) {
-        const nextNode = chain.chain_nodes[i + 1];
-        parts.push(`<div class="chain-arrow">
-          <div class="chain-arrow-line">→</div>
-          <div class="chain-arrow-lag">${nextNode.lag || ''}</div>
-        </div>`);
-      }
-      return parts.join('');
+    const nodes = chain.chain_nodes;
+    const nodesHtml = nodes.map((n, i) => {
+      const isFirst = i === 0;
+      const isLast = i === nodes.length - 1;
+      const nodeClass = isFirst ? 'trigger-node' : isLast ? 'target-node' : '';
+      const nextNode = !isLast ? nodes[i + 1] : null;
+      const lagLabel = nextNode ? nextNode.lag : '';
+      return `<div class="chain-step">
+        <div class="chain-step-node ${nodeClass}">
+          <div class="chain-step-node-label">${n.role}</div>
+          <div class="chain-step-node-name">${n.node}</div>
+          ${n.description ? `<div class="chain-step-node-desc">${n.description}</div>` : ''}
+        </div>
+        ${!isLast ? `<div class="chain-step-arrow">→ ${lagLabel}</div>` : ''}
+      </div>`;
     }).join('');
 
     const acc = Math.round(chain.historical_accuracy * 100);
