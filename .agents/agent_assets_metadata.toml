@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "APMeIToPjtC3O6zFrlRNn"
+uri = "file://KRIMAJLIS.zip"
+type = "unspecified"
+title = "KRIMAJLIS — Full Source"
