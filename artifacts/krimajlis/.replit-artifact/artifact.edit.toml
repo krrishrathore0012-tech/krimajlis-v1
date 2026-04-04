@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "KRIMAJLIS"
+version = "1.0.0"
+
+[[services]]
+localPort = 9000
+name = "web"
+paths = ["/"]
+
+[services.development]
+run = "python artifacts/krimajlis/app.py"
+
+[services.production]
+
+[services.production.serve]
+# static = false means it's a dynamic server
+type = "dynamic"
+
+[services.production.run]
+args = ["python", "artifacts/krimajlis/app.py"]
+
+[services.production.run.env]
+PORT = "9000"
+
+[services.production.health.startup]
+path = "/health"

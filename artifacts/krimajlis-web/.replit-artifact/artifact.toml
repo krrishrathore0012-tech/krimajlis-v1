@@ -1,0 +1,21 @@
+kind = "web"
+previewPath = "/"
+title = "KRIMAJLIS"
+version = "1.0.0"
+id = "artifacts/krimajlis-web"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/", "/health", "/api/regime", "/api/primary-nodes", "/api/alpha-feed", "/api/causal-chain", "/api/layers", "/api/ticker-tape", "/api/bridge" ]
+localPort = 9000
+
+[services.development]
+run = "python /home/runner/workspace/artifacts/krimajlis/app.py"
+
+[services.env]
+PORT = "9000"

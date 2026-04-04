@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRIMAJLIS — Global Market Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08090b;
+    --surface: #0d0f13;
+    --surface2: #13161c;
+    --border: rgba(255,255,255,0.07);
+    --gold: #c8a45a;
+    --green: #1ddf8a;
+    --red: #ff4a4a;
+    --blue: #4a9eff;
+    --purple: #9b6fff;
+    --text: #e8e6e0;
+    --muted: rgba(232,230,224,0.45);
+    --font: 'Space Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 12px;
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* HEADER */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 44px;
+  }
+
+  .logo {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+  }
+
+  .logo span {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 400;
+    margin-left: 10px;
+    letter-spacing: 0.1em;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .live-dot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--green);
+    letter-spacing: 0.12em;
+  }
+
+  .pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  .alpha-counter {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .alpha-counter strong {
+    color: var(--gold);
+    font-size: 13px;
+  }
+
+  .utc-clock {
+    font-size: 11px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* TICKER TAPE */
+  .ticker-wrap {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    height: 32px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .ticker-tape {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    white-space: nowrap;
+    animation: scroll-left 60s linear infinite;
+    width: max-content;
+  }
+
+  .ticker-tape:hover { animation-play-state: paused; }
+
+  @keyframes scroll-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 20px;
+    border-right: 1px solid var(--border);
+    height: 100%;
+  }
+
+  .ticker-label {
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+
+  .ticker-price {
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ticker-change {
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .up { color: var(--green); }
+  .down { color: var(--red); }
+  .neutral { color: var(--muted); }
+
+  /* REGIME STRIP */
+  .regime-strip {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    padding: 0;
+  }
+
+  .regime-cell {
+    padding: 10px 16px;
+    border-right: 1px solid var(--border);
+  }
+
+  .regime-cell:last-child { border-right: none; }
+
+  .regime-dim {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .regime-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+
+  .regime-bar-wrap {
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .regime-bar {
+    height: 100%;
+    border-radius: 1px;
+    transition: width 1s ease;
+  }
+
+  /* MAIN LAYOUT */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 65% 35%;
+    gap: 0;
+    min-height: calc(100vh - 200px);
+  }
+
+  .left-col {
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .right-col {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .panel-title {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .panel-meta {
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* ALPHA FEED */
+  .alpha-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .alpha-filter-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .filter-btn {
+    padding: 6px 12px;
+    font-family: var(--font);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    background: none;
+    border: none;
+    border-right: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+
+  .filter-btn:hover { color: var(--text); background: var(--surface2); }
+  .filter-btn.active { color: var(--gold); background: var(--surface2); }
+
+  .alpha-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 55vh;
+  }
+
+  .signal-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    border-left: 2px solid transparent;
+    cursor: pointer;
+    transition: background 0.15s;
+    animation: slideDown 0.3s ease forwards;
+  }
+
+  @keyframes slideDown {
+    from { transform: translateY(-8px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .signal-row:hover { background: var(--surface2); }
+  .signal-row.fresh { border-left-color: var(--green); }
+  .signal-row.decaying { border-left-color: var(--red); opacity: 0.55; }
+  .signal-row.selected { background: var(--surface2); border-left-color: var(--gold); }
+
+  .signal-ticker {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    min-width: 80px;
+    line-height: 1.2;
+  }
+
+  .signal-ticker-sub {
+    font-size: 9px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .signal-body {
+    flex: 1;
+  }
+
+  .signal-rationale {
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 5px;
+  }
+
+  .signal-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .dir-badge {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+
+  .dir-LONG { background: rgba(29,223,138,0.15); color: var(--green); }
+  .dir-SHORT { background: rgba(255,74,74,0.15); color: var(--red); }
+  .dir-SELL_VOL { background: rgba(155,111,255,0.15); color: var(--purple); }
+  .dir-SPREAD { background: rgba(74,158,255,0.15); color: var(--blue); }
+
+  .loophole-tag {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    padding: 2px 6px;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+
+  .lt-TRANSMISSION_LAG { background: rgba(200,164,90,0.15); color: var(--gold); }
+  .lt-INSTITUTIONAL_FLOW { background: rgba(74,158,255,0.15); color: var(--blue); }
+  .lt-NARRATIVE_VELOCITY { background: rgba(155,111,255,0.15); color: var(--purple); }
+  .lt-SUPPLY_CHAIN_ECHO { background: rgba(29,223,138,0.15); color: var(--green); }
+  .lt-VOLATILITY_SURFACE { background: rgba(255,74,74,0.15); color: var(--red); }
+
+  .conviction-pct {
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: auto;
+    min-width: 42px;
+    text-align: right;
+  }
+
+  .gap-tag {
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  /* RIGHT COLUMN */
+  .nodes-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+  }
+
+  .node-cell {
+    padding: 10px 14px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .node-cell:nth-child(2n) { border-right: none; }
+
+  .node-name {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .node-value {
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 2px;
+  }
+
+  .node-change {
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 5px;
+  }
+
+  .zscore-bar-wrap {
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .zscore-center {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 1px;
+    height: 100%;
+    background: var(--border);
+  }
+
+  .zscore-bar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    border-radius: 1px;
+    transition: all 0.8s ease;
+  }
+
+  /* CAUSAL CHAIN PANEL */
+  .causal-panel {
+    flex: 1;
+    min-height: 200px;
+  }
+
+  .causal-content {
+    padding: 14px 16px;
+    overflow-x: auto;
+  }
+
+  .causal-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+  }
+
+  .chain-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .chain-node {
+    flex-shrink: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 8px 12px;
+    text-align: center;
+    min-width: 90px;
+  }
+
+  .chain-node-role {
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .chain-node-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .chain-node-desc {
+    font-size: 9px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .chain-arrow {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 8px;
+    color: var(--muted);
+    font-size: 9px;
+  }
+
+  .chain-arrow-line {
+    font-size: 14px;
+    color: var(--gold);
+  }
+
+  .chain-arrow-lag {
+    font-size: 8px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .chain-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .chain-stat {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 8px 10px;
+  }
+
+  .chain-stat-label {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .chain-stat-value {
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .chain-rationale {
+    margin-top: 10px;
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.6;
+    padding: 8px 10px;
+    background: var(--surface2);
+    border-left: 2px solid var(--gold);
+    border-radius: 0 3px 3px 0;
+  }
+
+  /* LAYER CARDS */
+  .layers-section {
+    padding: 16px 20px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+  }
+
+  .layers-title {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .layers-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+
+  .layer-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .layer-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+  }
+
+  .layer-card:hover { background: var(--surface2); }
+  .layer-card.active { background: var(--surface2); }
+
+  .layer-gold::before { background: var(--gold); }
+  .layer-blue::before { background: var(--blue); }
+  .layer-purple::before { background: var(--purple); }
+  .layer-green::before { background: var(--green); }
+  .layer-red::before { background: var(--red); }
+
+  .layer-num {
+    font-size: 9px;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+
+  .layer-name {
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .layer-desc {
+    font-size: 9px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+
+  .layer-count {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .layer-count-label {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  /* BRIDGE SECTION */
+  .bridge-section {
+    padding: 16px 20px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+
+  .bridge-title {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .bridge-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .bridge-node {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 12px 16px;
+  }
+
+  .bridge-node-label {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .bridge-node-name {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+
+  .bridge-port {
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  .bridge-status {
+    display: inline-block;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    margin-top: 6px;
+    background: rgba(29,223,138,0.15);
+    color: var(--green);
+  }
+
+  .bridge-center {
+    text-align: center;
+  }
+
+  .bridge-center-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+  }
+
+  .bridge-center-desc {
+    font-size: 9px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .bridge-arrows {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--gold);
+  }
+
+  .bridge-btn {
+    display: block;
+    width: 100%;
+    margin-top: 8px;
+    padding: 5px;
+    font-family: var(--font);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+
+  .bridge-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .bridge-send-status {
+    font-size: 9px;
+    color: var(--green);
+    margin-top: 4px;
+    min-height: 14px;
+    text-align: center;
+  }
+
+  /* REFRESH INDICATOR */
+  .refresh-flash {
+    animation: flashRefresh 0.4s ease;
+  }
+
+  @keyframes flashRefresh {
+    0% { opacity: 0.3; }
+    100% { opacity: 1; }
+  }
+
+  /* SCROLLABLE TICKER */
+  .ticker-clone { display: inline-flex; }
+
+  /* RESPONSIVE NODE CELL for 4 items in 2x2 in 35% col */
+  .nodes-panel { flex: 0 0 auto; }
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">KRIMAJLIS<span>GLOBAL MARKET INTELLIGENCE</span></div>
+  <div class="header-right">
+    <div class="alpha-counter">SIGNALS <strong id="alphaCount">0</strong></div>
+    <div class="utc-clock" id="utcClock">00:00:00 UTC</div>
+    <div class="live-dot"><div class="pulse-dot"></div>LIVE</div>
+  </div>
+</div>
+
+<!-- TICKER TAPE -->
+<div class="ticker-wrap">
+  <div class="ticker-tape" id="tickerTape">
+    <div class="ticker-clone" id="tickerContent">
+      <div class="ticker-item"><span class="ticker-label">LOADING</span><span class="ticker-price neutral">—</span></div>
+    </div>
+    <div class="ticker-clone" id="tickerContent2">
+      <div class="ticker-item"><span class="ticker-label">LOADING</span><span class="ticker-price neutral">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- REGIME STRIP -->
+<div class="regime-strip" id="regimeStrip">
+  <div class="regime-cell">
+    <div class="regime-dim">GROWTH MOMENTUM</div>
+    <div class="regime-label" id="r_growth_momentum" style="color:var(--green)">LOADING</div>
+    <div class="regime-bar-wrap"><div class="regime-bar" id="rb_growth_momentum" style="width:0%;background:var(--green)"></div></div>
+  </div>
+  <div class="regime-cell">
+    <div class="regime-dim">INFLATION</div>
+    <div class="regime-label" id="r_inflation_trajectory" style="color:var(--gold)">LOADING</div>
+    <div class="regime-bar-wrap"><div class="regime-bar" id="rb_inflation_trajectory" style="width:0%;background:var(--gold)"></div></div>
+  </div>
+  <div class="regime-cell">
+    <div class="regime-dim">CREDIT STRESS</div>
+    <div class="regime-label" id="r_credit_stress" style="color:var(--muted)">LOADING</div>
+    <div class="regime-bar-wrap"><div class="regime-bar" id="rb_credit_stress" style="width:0%;background:var(--muted)"></div></div>
+  </div>
+  <div class="regime-cell">
+    <div class="regime-dim">DOLLAR CYCLE</div>
+    <div class="regime-label" id="r_dollar_cycle" style="color:var(--blue)">LOADING</div>
+    <div class="regime-bar-wrap"><div class="regime-bar" id="rb_dollar_cycle" style="width:0%;background:var(--blue)"></div></div>
+  </div>
+  <div class="regime-cell">
+    <div class="regime-dim">RISK APPETITE</div>
+    <div class="regime-label" id="r_risk_appetite" style="color:var(--green)">LOADING</div>
+    <div class="regime-bar-wrap"><div class="regime-bar" id="rb_risk_appetite" style="width:0%;background:var(--green)"></div></div>
+  </div>
+  <div class="regime-cell">
+    <div class="regime-dim">COMMODITY CYCLE</div>
+    <div class="regime-label" id="r_commodity_cycle" style="color:var(--gold)">LOADING</div>
+    <div class="regime-bar-wrap"><div class="regime-bar" id="rb_commodity_cycle" style="width:0%;background:var(--gold)"></div></div>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="main-grid">
+
+  <!-- LEFT: ALPHA FEED -->
+  <div class="left-col">
+    <div class="panel alpha-panel">
+      <div class="panel-header">
+        <div class="panel-title">ALPHA FEED — ACTIVE SIGNALS</div>
+        <div class="panel-meta" id="alphaRefreshMeta">Refreshing every 15s</div>
+      </div>
+      <div class="alpha-filter-bar" id="filterBar">
+        <button class="filter-btn active" data-filter="ALL" onclick="setFilter('ALL',this)">ALL LAYERS</button>
+        <button class="filter-btn" data-filter="TRANSMISSION_LAG" onclick="setFilter('TRANSMISSION_LAG',this)" style="color:var(--gold)">TRANSMISSION LAG</button>
+        <button class="filter-btn" data-filter="INSTITUTIONAL_FLOW" onclick="setFilter('INSTITUTIONAL_FLOW',this)" style="color:var(--blue)">INSTITUTIONAL FLOW</button>
+        <button class="filter-btn" data-filter="NARRATIVE_VELOCITY" onclick="setFilter('NARRATIVE_VELOCITY',this)" style="color:var(--purple)">NARRATIVE VELOCITY</button>
+        <button class="filter-btn" data-filter="SUPPLY_CHAIN_ECHO" onclick="setFilter('SUPPLY_CHAIN_ECHO',this)" style="color:var(--green)">SUPPLY CHAIN ECHO</button>
+        <button class="filter-btn" data-filter="VOLATILITY_SURFACE" onclick="setFilter('VOLATILITY_SURFACE',this)" style="color:var(--red)">VOLATILITY SURFACE</button>
+      </div>
+      <div class="alpha-list" id="alphaList">
+        <div style="padding:30px; text-align:center; color:var(--muted); font-size:10px; letter-spacing:0.12em;">INITIALIZING INTELLIGENCE ENGINE...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COL -->
+  <div class="right-col">
+    <!-- PRIMARY NODES -->
+    <div class="panel nodes-panel">
+      <div class="panel-header">
+        <div class="panel-title">PRIMARY NODES</div>
+        <div class="panel-meta" id="nodesRefreshMeta">12 nodes</div>
+      </div>
+      <div class="nodes-grid" id="nodesGrid">
+        <div class="node-cell" style="grid-column:1/-1; text-align:center; padding:20px; color:var(--muted); font-size:10px; letter-spacing:0.1em;">LOADING NODES...</div>
+      </div>
+    </div>
+
+    <!-- CAUSAL CHAIN -->
+    <div class="panel causal-panel">
+      <div class="panel-header">
+        <div class="panel-title">CAUSAL CHAIN</div>
+        <div class="panel-meta" id="causalMeta">Click signal to inspect</div>
+      </div>
+      <div class="causal-content" id="causalContent">
+        <div class="causal-empty">SELECT A SIGNAL TO INSPECT ITS CAUSAL CHAIN</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- LAYER CARDS -->
+<div class="layers-section">
+  <div class="layers-title">INTELLIGENCE LAYERS — SIGNAL CLASSIFICATION ENGINE</div>
+  <div class="layers-grid" id="layersGrid">
+    <div class="layer-card layer-gold">
+      <div class="layer-num">L01</div>
+      <div class="layer-name" style="color:var(--gold)">TRANSMISSION LAG</div>
+      <div class="layer-desc">Cross-asset price transmission delays</div>
+      <div class="layer-count" style="color:var(--gold)">—</div>
+      <div class="layer-count-label">SIGNALS</div>
+    </div>
+    <div class="layer-card layer-blue">
+      <div class="layer-num">L02</div>
+      <div class="layer-name" style="color:var(--blue)">INSTITUTIONAL FLOW</div>
+      <div class="layer-desc">Mandated rebalancing and flow patterns</div>
+      <div class="layer-count" style="color:var(--blue)">—</div>
+      <div class="layer-count-label">SIGNALS</div>
+    </div>
+    <div class="layer-card layer-purple">
+      <div class="layer-num">L03</div>
+      <div class="layer-name" style="color:var(--purple)">NARRATIVE VELOCITY</div>
+      <div class="layer-desc">News-driven overreaction and mean reversion</div>
+      <div class="layer-count" style="color:var(--purple)">—</div>
+      <div class="layer-count-label">SIGNALS</div>
+    </div>
+    <div class="layer-card layer-green">
+      <div class="layer-num">L04</div>
+      <div class="layer-name" style="color:var(--green)">SUPPLY CHAIN ECHO</div>
+      <div class="layer-desc">Cost propagation through industrial chains</div>
+      <div class="layer-count" style="color:var(--green)">—</div>
+      <div class="layer-count-label">SIGNALS</div>
+    </div>
+    <div class="layer-card layer-red">
+      <div class="layer-num">L05</div>
+      <div class="layer-name" style="color:var(--red)">VOLATILITY SURFACE</div>
+      <div class="layer-desc">IV vs RV structural mispricing</div>
+      <div class="layer-count" style="color:var(--red)">—</div>
+      <div class="layer-count-label">SIGNALS</div>
+    </div>
+  </div>
+</div>
+
+<!-- BRIDGE -->
+<div class="bridge-section">
+  <div class="bridge-title">SYSTEM BRIDGE — UPSTREAM INTEGRATION LAYER</div>
+  <div class="bridge-grid">
+    <div class="bridge-node">
+      <div class="bridge-node-label">DOWNSTREAM SYSTEM</div>
+      <div class="bridge-node-name">VERITAS</div>
+      <div class="bridge-port">PORT 5000</div>
+      <div class="bridge-status">STANDING BY</div>
+      <button class="bridge-btn" onclick="sendBridge('veritas')">SEND ALPHA BATCH →</button>
+      <div class="bridge-send-status" id="veritas-status"></div>
+    </div>
+
+    <div class="bridge-center">
+      <div class="bridge-center-name">KRIMAJLIS</div>
+      <div class="bridge-center-desc">INTELLIGENCE HUB</div>
+      <div class="bridge-arrows">← ⟶</div>
+    </div>
+
+    <div class="bridge-node">
+      <div class="bridge-node-label">DOWNSTREAM SYSTEM</div>
+      <div class="bridge-node-name">GARUDA</div>
+      <div class="bridge-port">PORT 8000</div>
+      <div class="bridge-status">STANDING BY</div>
+      <button class="bridge-btn" onclick="sendBridge('garuda')">SEND ALPHA BATCH →</button>
+      <div class="bridge-send-status" id="garuda-status"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // State
+  let allSignals = [];
+  let activeFilter = 'ALL';
+  let selectedSignalId = null;
+  let alphaTotal = 0;
+
+  // UTC Clock
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getUTCHours()).padStart(2,'0');
+    const m = String(now.getUTCMinutes()).padStart(2,'0');
+    const s = String(now.getUTCSeconds()).padStart(2,'0');
+    document.getElementById('utcClock').textContent = h + ':' + m + ':' + s + ' UTC';
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // Format numbers
+  function fmt(v, decimals=2) {
+    if (v === null || v === undefined) return '—';
+    return parseFloat(v).toFixed(decimals);
+  }
+
+  function fmtPct(v) {
+    if (v === null || v === undefined) return '—';
+    const n = parseFloat(v);
+    return (n >= 0 ? '+' : '') + n.toFixed(3) + '%';
+  }
+
+  function convClass(v) {
+    if (v >= 0.8) return 'up';
+    if (v >= 0.6) return 'neutral';
+    return 'muted';
+  }
+
+  // Regime color
+  function regimeColor(dim, dir) {
+    if (dir === 'up') return 'var(--green)';
+    if (dir === 'down') return 'var(--red)';
+    return 'var(--muted)';
+  }
+
+  // FETCH REGIME
+  async function fetchRegime() {
+    try {
+      const r = await fetch('/api/regime');
+      const data = await r.json();
+      for (const [dim, val] of Object.entries(data)) {
+        const label = document.getElementById('r_' + dim);
+        const bar = document.getElementById('rb_' + dim);
+        if (label) {
+          label.textContent = val.label;
+          label.style.color = regimeColor(dim, val.direction);
+        }
+        if (bar) {
+          bar.style.width = val.score + '%';
+          bar.style.background = regimeColor(dim, val.direction);
+        }
+      }
+    } catch(e) {}
+  }
+
+  // FETCH TICKER TAPE
+  async function fetchTickerTape() {
+    try {
+      const r = await fetch('/api/ticker-tape');
+      const items = await r.json();
+      const html = items.map(item => {
+        const updown = item.pct_change >= 0 ? 'up' : 'down';
+        const arrow = item.pct_change >= 0 ? '▲' : '▼';
+        const price = item.price > 1000 ? fmt(item.price, 0) : fmt(item.price, 2);
+        return `<div class="ticker-item">
+          <span class="ticker-label">${item.label}</span>
+          <span class="ticker-price ${updown}">${price}</span>
+          <span class="ticker-change ${updown}">${arrow} ${Math.abs(item.pct_change).toFixed(2)}%</span>
+        </div>`;
+      }).join('');
+      document.getElementById('tickerContent').innerHTML = html;
+      document.getElementById('tickerContent2').innerHTML = html;
+    } catch(e) {}
+  }
+
+  // FETCH PRIMARY NODES
+  async function fetchPrimaryNodes() {
+    try {
+      const r = await fetch('/api/primary-nodes');
+      const nodes = await r.json();
+      const grid = document.getElementById('nodesGrid');
+      document.getElementById('nodesRefreshMeta').textContent = nodes.length + ' nodes';
+
+      const html = nodes.slice(0, 12).map(n => {
+        const updown = n.pct_change >= 0 ? 'up' : 'down';
+        const arrow = n.pct_change >= 0 ? '▲' : '▼';
+        const zScore = parseFloat(n.z_score) || 0;
+        const zAbs = Math.min(Math.abs(zScore), 3);
+        const zPct = (zAbs / 3) * 50;
+        const zLeft = zScore >= 0;
+        const zColor = Math.abs(zScore) > 1.5 ? (zScore > 0 ? 'var(--green)' : 'var(--red)') : 'var(--muted)';
+
+        const val = n.current_value;
+        const dispVal = val > 10000 ? fmt(val, 0) : val > 100 ? fmt(val, 1) : fmt(val, 4);
+
+        return `<div class="node-cell">
+          <div class="node-name">${n.name || n.node_id}</div>
+          <div class="node-value">${dispVal}</div>
+          <div class="node-change ${updown}">${arrow} ${Math.abs(n.pct_change).toFixed(3)}%</div>
+          <div class="zscore-bar-wrap">
+            <div class="zscore-center"></div>
+            <div class="zscore-bar" style="
+              width:${zPct}%;
+              background:${zColor};
+              ${zLeft ? 'left:50%' : 'right:50%'}
+            "></div>
+          </div>
+        </div>`;
+      }).join('');
+      grid.innerHTML = html;
+      grid.classList.add('refresh-flash');
+      setTimeout(() => grid.classList.remove('refresh-flash'), 400);
+    } catch(e) {}
+  }
+
+  // FILTER
+  function setFilter(filter, btn) {
+    activeFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderAlphaFeed();
+  }
+
+  // RENDER ALPHA FEED
+  function renderAlphaFeed() {
+    const list = document.getElementById('alphaList');
+    let signals = allSignals;
+    if (activeFilter !== 'ALL') {
+      signals = signals.filter(s => s.loophole_type === activeFilter);
+    }
+    if (signals.length === 0) {
+      list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);font-size:10px;letter-spacing:0.12em;">NO SIGNALS FOR THIS LAYER</div>';
+      return;
+    }
+
+    const html = signals.map((s, i) => {
+      const fresh = s.freshness === 'FRESH' ? 'fresh' : s.freshness === 'DECAYING' ? 'decaying' : '';
+      const selected = s.signal_id === selectedSignalId ? 'selected' : '';
+      const convPct = Math.round(s.conviction * 100);
+      const convColor = convPct >= 80 ? 'var(--green)' : convPct >= 60 ? 'var(--gold)' : 'var(--muted)';
+
+      return `<div class="signal-row ${fresh} ${selected}" onclick="selectSignal('${s.signal_id}',this)">
+        <div>
+          <div class="signal-ticker">${s.ticker}</div>
+          <div class="signal-ticker-sub">${s.geography}</div>
+        </div>
+        <div class="signal-body">
+          <div class="signal-rationale">${s.rationale}</div>
+          <div class="signal-meta">
+            <span class="dir-badge dir-${s.direction}">${s.direction}</span>
+            <span class="loophole-tag lt-${s.loophole_type}">${s.loophole_type.replace(/_/g,' ')}</span>
+            <span class="gap-tag">GAP ${s.gap_to_theoretical}%</span>
+            <span class="gap-tag">${s.expected_reversion_sessions}s rev</span>
+            ${s.regime_alignment ? '<span style="font-size:9px;color:var(--green)">✓ ALIGNED</span>' : ''}
+          </div>
+        </div>
+        <div class="conviction-pct" style="color:${convColor}">${convPct}%</div>
+      </div>`;
+    }).join('');
+
+    list.innerHTML = html;
+  }
+
+  // FETCH ALPHA FEED
+  async function fetchAlphaFeed() {
+    try {
+      const r = await fetch('/api/alpha-feed');
+      const signals = await r.json();
+      const prevCount = allSignals.length;
+      allSignals = signals;
+      alphaTotal += signals.length;
+      document.getElementById('alphaCount').textContent = signals.length;
+      renderAlphaFeed();
+
+      // Auto-select first signal for causal chain on first load
+      if (!selectedSignalId && signals.length > 0) {
+        setTimeout(() => {
+          const firstRow = document.querySelector('.signal-row');
+          if (firstRow) {
+            selectSignal(signals[0].signal_id, firstRow);
+          }
+        }, 200);
+      }
+
+      // Refresh layers
+      fetchLayers();
+    } catch(e) {}
+  }
+
+  // SELECT SIGNAL - FETCH CAUSAL CHAIN
+  async function selectSignal(signalId, el) {
+    document.querySelectorAll('.signal-row').forEach(r => r.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedSignalId = signalId;
+
+    const meta = document.getElementById('causalMeta');
+    meta.textContent = 'Loading...';
+
+    try {
+      const r = await fetch('/api/causal-chain/' + signalId);
+      const chain = await r.json();
+      renderCausalChain(chain);
+    } catch(e) {
+      document.getElementById('causalContent').innerHTML = '<div class="causal-empty">FETCH ERROR</div>';
+    }
+  }
+
+  // RENDER CAUSAL CHAIN
+  function renderCausalChain(chain) {
+    const meta = document.getElementById('causalMeta');
+    meta.textContent = chain.trigger_node + ' → ' + chain.downstream_instrument;
+
+    const nodesHtml = chain.chain_nodes.map((n, i) => {
+      const roleColor = n.role === 'TRIGGER' ? 'var(--red)' : n.role === 'TARGET' ? 'var(--green)' : 'var(--blue)';
+      const parts = [
+        `<div class="chain-node">
+          <div class="chain-node-role" style="color:${roleColor}">${n.role}</div>
+          <div class="chain-node-name">${n.node}</div>
+          <div class="chain-node-desc">${n.description || ''}</div>
+        </div>`
+      ];
+      if (i < chain.chain_nodes.length - 1) {
+        const nextNode = chain.chain_nodes[i + 1];
+        parts.push(`<div class="chain-arrow">
+          <div class="chain-arrow-line">→</div>
+          <div class="chain-arrow-lag">${nextNode.lag || ''}</div>
+        </div>`);
+      }
+      return parts.join('');
+    }).join('');
+
+    const acc = Math.round(chain.historical_accuracy * 100);
+    const ci = chain.confidence_interval ? '[' + Math.round(chain.confidence_interval[0]*100) + '%, ' + Math.round(chain.confidence_interval[1]*100) + '%]' : '—';
+    const gap = chain.gap_to_theoretical;
+    const zScore = chain.z_score;
+
+    document.getElementById('causalContent').innerHTML = `
+      <div class="chain-flow">${nodesHtml}</div>
+      <div class="chain-stats">
+        <div class="chain-stat">
+          <div class="chain-stat-label">ACCURACY</div>
+          <div class="chain-stat-value" style="color:var(--green)">${acc}%</div>
+        </div>
+        <div class="chain-stat">
+          <div class="chain-stat-label">GAP TO FAIR</div>
+          <div class="chain-stat-value" style="color:var(--gold)">${gap}%</div>
+        </div>
+        <div class="chain-stat">
+          <div class="chain-stat-label">TRIGGER Z</div>
+          <div class="chain-stat-value" style="color:var(--blue)">${fmt(zScore, 2)}σ</div>
+        </div>
+        <div class="chain-stat">
+          <div class="chain-stat-label">CONF INTERVAL</div>
+          <div class="chain-stat-value" style="font-size:9px;padding-top:4px">${ci}</div>
+        </div>
+      </div>
+      <div class="chain-rationale">${chain.rationale}</div>
+    `;
+  }
+
+  // FETCH LAYERS
+  async function fetchLayers() {
+    try {
+      const r = await fetch('/api/layers');
+      const layers = await r.json();
+      const colorMap = {
+        gold: 'var(--gold)', blue: 'var(--blue)',
+        purple: 'var(--purple)', green: 'var(--green)', red: 'var(--red)'
+      };
+      const grid = document.getElementById('layersGrid');
+      const cards = grid.querySelectorAll('.layer-card');
+      layers.forEach((layer, i) => {
+        if (cards[i]) {
+          const countEl = cards[i].querySelector('.layer-count');
+          if (countEl) countEl.textContent = layer.signal_count;
+        }
+      });
+    } catch(e) {}
+  }
+
+  // BRIDGE SEND
+  async function sendBridge(target) {
+    const statusEl = document.getElementById(target + '-status');
+    statusEl.textContent = 'SENDING...';
+    try {
+      const r = await fetch('/api/bridge/' + target, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({source: 'KRIMAJLIS', timestamp: Date.now()})
+      });
+      const data = await r.json();
+      statusEl.textContent = '✓ ' + data.status;
+      setTimeout(() => statusEl.textContent = '', 5000);
+    } catch(e) {
+      statusEl.textContent = '✗ ERROR';
+    }
+  }
+
+  // LAYER CARD CLICK FILTER
+  document.querySelectorAll('.layer-card').forEach(card => {
+    const filterMap = {
+      'layer-gold': 'TRANSMISSION_LAG',
+      'layer-blue': 'INSTITUTIONAL_FLOW',
+      'layer-purple': 'NARRATIVE_VELOCITY',
+      'layer-green': 'SUPPLY_CHAIN_ECHO',
+      'layer-red': 'VOLATILITY_SURFACE',
+    };
+    const layerClasses = ['layer-gold', 'layer-blue', 'layer-purple', 'layer-green', 'layer-red'];
+    card.addEventListener('click', () => {
+      const cls = layerClasses.find(c => card.classList.contains(c));
+      const filter = filterMap[cls];
+      if (!filter) return;
+      if (card.classList.contains('active')) {
+        card.classList.remove('active');
+        const allBtn = document.querySelector('[data-filter="ALL"]');
+        setFilter('ALL', allBtn);
+      } else {
+        document.querySelectorAll('.layer-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        const btn = document.querySelector('[data-filter="' + filter + '"]');
+        if (btn) setFilter(filter, btn);
+      }
+    });
+  });
+
+  // INITIAL LOAD
+  fetchRegime();
+  fetchTickerTape();
+  fetchPrimaryNodes();
+  fetchAlphaFeed();
+
+  // INTERVALS
+  setInterval(fetchRegime, 60000);
+  setInterval(fetchTickerTape, 30000);
+  setInterval(fetchPrimaryNodes, 30000);
+  setInterval(fetchAlphaFeed, 15000);
+</script>
+</body>
+</html>
