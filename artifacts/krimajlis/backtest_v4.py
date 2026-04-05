@@ -7,13 +7,28 @@ import time
 
 POLYGON_KEY = "7aHECnScfzACOtWgyJl_89ynJWObOpCf"
 
+# Fix 1 — timezone-safe date normalizer
+def normalize_date(ts):
+    try:
+        if hasattr(ts, 'tzinfo') and ts.tzinfo is not None:
+            ts = ts.tz_convert('UTC').tz_localize(None)
+        if hasattr(ts, 'date'):
+            return ts.date()
+        return ts
+    except Exception:
+        try:
+            return ts.date()
+        except Exception:
+            return ts
+
 def fetch_polygon_daily(ticker, years=5):
     try:
-        end = datetime.now()
-        start = end - timedelta(days=years*365)
-        url = f"https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day/{start.strftime('%Y-%m-%d')}/{end.strftime('%Y-%m-%d')}"
+        end   = datetime.now()
+        start = end - timedelta(days=years * 365)
+        url   = (f"https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day"
+                 f"/{start.strftime('%Y-%m-%d')}/{end.strftime('%Y-%m-%d')}")
         params = {'adjusted': 'true', 'sort': 'asc', 'limit': 50000, 'apiKey': POLYGON_KEY}
-        r = requests.get(url, params=params, timeout=15)
+        r    = requests.get(url, params=params, timeout=15)
         data = r.json()
         if not data.get('results'):
             return None
@@ -27,7 +42,7 @@ def fetch_polygon_daily(ticker, years=5):
 
 def fetch_yfinance_hourly(ticker, days=59):
     try:
-        t = yf.Ticker(ticker)
+        t    = yf.Ticker(ticker)
         hist = t.history(period=f'{days}d', interval='60m', auto_adjust=True)
         if hist.empty or len(hist) < 50:
             return None
@@ -37,25 +52,26 @@ def fetch_yfinance_hourly(ticker, days=59):
 
 def fetch_yfinance_daily(ticker, years=5):
     try:
-        t = yf.Ticker(ticker)
-        hist = t.history(period=f'{min(years,4)*365}d', interval='1d', auto_adjust=True)
+        t    = yf.Ticker(ticker)
+        hist = t.history(period=f'{min(years, 4) * 365}d', interval='1d', auto_adjust=True)
         if hist.empty or len(hist) < 100:
             return None
         return hist['Close']
     except Exception:
         return None
 
+# Fix 1 applied — uses normalize_date
 def build_vix_regime(vix_series):
     regimes = {}
     for idx, val in vix_series.items():
-        d = idx if isinstance(idx, type(datetime.now().date())) else (idx.date() if hasattr(idx, 'date') else idx)
+        d = normalize_date(idx)
         regimes[d] = 'RISK_OFF' if val > 20 else 'RISK_ON'
     return regimes
 
 def test_intraday(rel, vix_regimes):
     trigger = fetch_yfinance_hourly(rel['trigger'])
     time.sleep(0.3)
-    target = fetch_yfinance_hourly(rel['target'])
+    target  = fetch_yfinance_hourly(rel['target'])
     time.sleep(0.3)
 
     if trigger is None or target is None:
@@ -86,11 +102,10 @@ def test_intraday(rel, vix_regimes):
             continue
         if i + lag >= len(tgt):
             continue
-        tmove = tgt.iloc[i + lag]
+        tmove   = tgt.iloc[i + lag]
         correct = (rel['rdir'] == 'up'   and tmove > 0) or \
                   (rel['rdir'] == 'down' and tmove < 0)
-        ts = dates[i]
-        d  = ts.date() if hasattr(ts, 'date') else ts
+        d      = normalize_date(dates[i])          # Fix 1
         regime = vix_regimes.get(d, 'UNK')
         res['all'][1] += 1
         if correct: res['all'][0] += 1
@@ -107,11 +122,13 @@ def test_intraday(rel, vix_regimes):
     def a(r): return round(r[0] / r[1], 3) if r[1] > 0 else 0
 
     return {
-        'status': 'OK', 'name': rel['name'], 'type': rel['type'],
-        'stated': rel['stated'],
-        'all_acc': a(res['all']), 'all_n': res['all'][1],
-        'off_acc': a(res['off']), 'off_n': res['off'][1],
-        'on_acc':  a(res['on']),  'on_n':  res['on'][1],
+        'status':   'OK',
+        'name':     rel['name'],
+        'type':     rel['type'],
+        'stated':   rel['stated'],
+        'all_acc':  a(res['all']), 'all_n':  res['all'][1],
+        'off_acc':  a(res['off']), 'off_n':  res['off'][1],
+        'on_acc':   a(res['on']),  'on_n':   res['on'][1],
     }
 
 def test_daily(rel, vix_regimes):
@@ -131,7 +148,7 @@ def test_daily(rel, vix_regimes):
     tgt = target.pct_change().dropna()
 
     def to_date(idx):
-        return [i if isinstance(i, type(datetime.now().date())) else (i.date() if hasattr(i, 'date') else i) for i in idx]
+        return [normalize_date(i) for i in idx]   # Fix 1
 
     tr.index  = to_date(tr.index)
     tgt.index = to_date(tgt.index)
@@ -159,10 +176,10 @@ def test_daily(rel, vix_regimes):
             continue
         if i + lag >= len(tgt):
             continue
-        tmove = tgt.iloc[i + lag]
+        tmove   = tgt.iloc[i + lag]
         correct = (rel['rdir'] == 'up'   and tmove > 0) or \
                   (rel['rdir'] == 'down' and tmove < 0)
-        d = dates[i]
+        d      = normalize_date(dates[i])          # Fix 1
         regime = vix_regimes.get(d, 'UNK')
         res['all'][1] += 1
         if correct: res['all'][0] += 1
@@ -179,11 +196,13 @@ def test_daily(rel, vix_regimes):
     def a(r): return round(r[0] / r[1], 3) if r[1] > 0 else 0
 
     return {
-        'status': 'OK', 'name': rel['name'], 'type': rel['type'],
-        'stated': rel['stated'],
-        'all_acc': a(res['all']), 'all_n': res['all'][1],
-        'off_acc': a(res['off']), 'off_n': res['off'][1],
-        'on_acc':  a(res['on']),  'on_n':  res['on'][1],
+        'status':   'OK',
+        'name':     rel['name'],
+        'type':     rel['type'],
+        'stated':   rel['stated'],
+        'all_acc':  a(res['all']), 'all_n':  res['all'][1],
+        'off_acc':  a(res['off']), 'off_n':  res['off'][1],
+        'on_acc':   a(res['on']),  'on_n':   res['on'][1],
     }
 
 
@@ -210,31 +229,37 @@ INTRADAY_RELS = [
     {'name': 'HYG → SPY (6h lag)',  'trigger': 'HYG', 'target': 'SPY',  'tdir': 'down', 'rdir': 'down', 'lag_bars': 6,  'stated': 0.82, 'type': 'TRANSMISSION_LAG'},
 ]
 
+# Fix 2 — extended DAILY_RELS with the new relationships
 DAILY_RELS = [
-    {'name': 'SPY → GLD daily T+1', 'trigger': 'SPY', 'target': 'GLD', 'tdir': 'down', 'rdir': 'up',   'lag_bars': 1, 'stated': 0.71, 'type': 'TRANSMISSION_LAG'},
-    {'name': 'GLD → GDX daily T+1', 'trigger': 'GLD', 'target': 'GDX', 'tdir': 'up',   'rdir': 'up',   'lag_bars': 1, 'stated': 0.79, 'type': 'TRANSMISSION_LAG'},
-    {'name': 'HYG → SPY daily T+1', 'trigger': 'HYG', 'target': 'SPY', 'tdir': 'down', 'rdir': 'down', 'lag_bars': 1, 'stated': 0.82, 'type': 'TRANSMISSION_LAG'},
-    {'name': 'SPY → EWJ daily T+1', 'trigger': 'SPY', 'target': 'EWJ', 'tdir': 'down', 'rdir': 'down', 'lag_bars': 1, 'stated': 0.81, 'type': 'INSTITUTIONAL_FLOW'},
-    {'name': 'GLD → AGG daily T+1', 'trigger': 'GLD', 'target': 'AGG', 'tdir': 'up',   'rdir': 'up',   'lag_bars': 1, 'stated': 0.70, 'type': 'INSTITUTIONAL_FLOW'},
-    {'name': 'SPY → EEM daily T+1', 'trigger': 'SPY', 'target': 'EEM', 'tdir': 'down', 'rdir': 'down', 'lag_bars': 1, 'stated': 0.77, 'type': 'INSTITUTIONAL_FLOW'},
-    {'name': 'HYG → TLT daily T+1', 'trigger': 'HYG', 'target': 'TLT', 'tdir': 'down', 'rdir': 'up',   'lag_bars': 1, 'stated': 0.74, 'type': 'INSTITUTIONAL_FLOW'},
-    {'name': 'GLD → SLV daily T+1', 'trigger': 'GLD', 'target': 'SLV', 'tdir': 'up',   'rdir': 'up',   'lag_bars': 1, 'stated': 0.78, 'type': 'TRANSMISSION_LAG'},
-    {'name': 'SPY → XLK daily T+1', 'trigger': 'SPY', 'target': 'XLK', 'tdir': 'down', 'rdir': 'down', 'lag_bars': 1, 'stated': 0.83, 'type': 'TRANSMISSION_LAG'},
-    {'name': 'HYG → EEM daily T+1', 'trigger': 'HYG', 'target': 'EEM', 'tdir': 'down', 'rdir': 'down', 'lag_bars': 1, 'stated': 0.72, 'type': 'INSTITUTIONAL_FLOW'},
+    {'name': 'SPY → GLD daily T+1',  'trigger': 'SPY', 'target': 'GLD',  'tdir': 'down', 'rdir': 'up',   'lag_bars': 1, 'stated': 0.71, 'type': 'TRANSMISSION_LAG'},
+    {'name': 'GLD → GDX daily T+1',  'trigger': 'GLD', 'target': 'GDX',  'tdir': 'up',   'rdir': 'up',   'lag_bars': 1, 'stated': 0.79, 'type': 'TRANSMISSION_LAG'},
+    {'name': 'GLD → AGG daily T+1',  'trigger': 'GLD', 'target': 'AGG',  'tdir': 'up',   'rdir': 'up',   'lag_bars': 1, 'stated': 0.70, 'type': 'INSTITUTIONAL_FLOW'},
+    {'name': 'HYG → SPY daily T+1',  'trigger': 'HYG', 'target': 'SPY',  'tdir': 'down', 'rdir': 'down', 'lag_bars': 1, 'stated': 0.82, 'type': 'TRANSMISSION_LAG'},
+    {'name': 'HYG → SPY daily T+2',  'trigger': 'HYG', 'target': 'SPY',  'tdir': 'down', 'rdir': 'down', 'lag_bars': 2, 'stated': 0.82, 'type': 'TRANSMISSION_LAG'},
+    {'name': 'SPY → EWJ daily T+1',  'trigger': 'SPY', 'target': 'EWJ',  'tdir': 'down', 'rdir': 'down', 'lag_bars': 1, 'stated': 0.81, 'type': 'INSTITUTIONAL_FLOW'},
+    {'name': 'SPY → EEM daily T+1',  'trigger': 'SPY', 'target': 'EEM',  'tdir': 'down', 'rdir': 'down', 'lag_bars': 1, 'stated': 0.77, 'type': 'INSTITUTIONAL_FLOW'},
+    {'name': 'HYG → EEM daily T+1',  'trigger': 'HYG', 'target': 'EEM',  'tdir': 'down', 'rdir': 'down', 'lag_bars': 1, 'stated': 0.72, 'type': 'INSTITUTIONAL_FLOW'},
+    {'name': 'HYG → TLT daily T+1',  'trigger': 'HYG', 'target': 'TLT',  'tdir': 'down', 'rdir': 'up',   'lag_bars': 1, 'stated': 0.74, 'type': 'INSTITUTIONAL_FLOW'},
+    {'name': 'SPY → XLK daily T+1',  'trigger': 'SPY', 'target': 'XLK',  'tdir': 'down', 'rdir': 'down', 'lag_bars': 1, 'stated': 0.83, 'type': 'TRANSMISSION_LAG'},
+    {'name': 'GLD → SLV daily T+1',  'trigger': 'GLD', 'target': 'SLV',  'tdir': 'up',   'rdir': 'up',   'lag_bars': 1, 'stated': 0.78, 'type': 'TRANSMISSION_LAG'},
+    {'name': 'SPY → JETS daily T+2', 'trigger': 'SPY', 'target': 'JETS', 'tdir': 'down', 'rdir': 'down', 'lag_bars': 2, 'stated': 0.74, 'type': 'SUPPLY_CHAIN_ECHO'},
+    {'name': 'SPY → XME daily T+2',  'trigger': 'SPY', 'target': 'XME',  'tdir': 'down', 'rdir': 'down', 'lag_bars': 2, 'stated': 0.71, 'type': 'SUPPLY_CHAIN_ECHO'},
+    {'name': 'HYG → KBE daily T+1',  'trigger': 'HYG', 'target': 'KBE',  'tdir': 'down', 'rdir': 'down', 'lag_bars': 1, 'stated': 0.72, 'type': 'TRANSMISSION_LAG'},
+    {'name': 'SPY → VNQ daily T+1',  'trigger': 'SPY', 'target': 'VNQ',  'tdir': 'down', 'rdir': 'down', 'lag_bars': 1, 'stated': 0.73, 'type': 'TRANSMISSION_LAG'},
 ]
 
 
-print("=" * 75)
-print("KRIMAJLIS BACKTEST v4")
+print("=" * 82)
+print("KRIMAJLIS BACKTEST v4  (fixed: timezone + extended daily + R_OFF counts)")
 print("Intraday: yfinance 60m x59d | Daily: Polygon 5yr | Regime: VIX>20")
 print(f"Run: {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}")
-print("=" * 75)
+print("=" * 82)
 
 print("\nBuilding VIX regime from Polygon 5-year daily...")
 vix_poly = fetch_polygon_daily('VIX', years=5)
 if vix_poly is None:
-    print("Polygon VIX unavailable, using yfinance...")
-    vix_yf = fetch_yfinance_daily('^VIX', years=4)
+    print("Polygon VIX unavailable, using yfinance ^VIX...")
+    vix_yf     = fetch_yfinance_daily('^VIX', years=4)
     vix_regimes = build_vix_regime(vix_yf) if vix_yf is not None else {}
 else:
     vix_regimes = build_vix_regime(vix_poly)
@@ -244,10 +269,11 @@ on  = sum(1 for v in vix_regimes.values() if v == 'RISK_ON')
 if off + on > 0:
     print(f"Regime: {off} RISK_OFF / {on} RISK_ON ({off/(off+on)*100:.1f}% RISK_OFF)")
 else:
-    print("No regime data")
+    print("No regime data loaded")
 
-print(f"\n{'Relationship':<38} {'All':>7} {'R_OFF':>8} {'R_ON':>7} {'N':>5}  Status")
-print("-" * 78)
+# Fix 3 — header now shows R_OFF with obs count format
+print(f"\n{'Relationship':<42} {'All':>7} {'R_OFF (n)':>12} {'R_ON':>7} {'N':>5}  Status")
+print("-" * 82)
 
 all_results = []
 
@@ -256,13 +282,18 @@ for rel in INTRADAY_RELS:
     r = test_intraday(rel, vix_regimes)
     if r['status'] != 'OK':
         n = r.get('total', 0)
-        print(f"{rel['name']:<38} {r['status']:>7}" + (f" ({n} obs)" if n else ""))
+        print(f"{rel['name']:<42} {r['status']:>7}" + (f" ({n} obs)" if n else ""))
         continue
-    a   = f"{r['all_acc']*100:.1f}%"
-    ro  = f"{r['off_acc']*100:.1f}%" if r['off_n'] >= 5 else "n/a"
-    ron = f"{r['on_acc']*100:.1f}%"  if r['on_n']  >= 5 else "n/a"
-    v   = "✓ VALID" if r['all_acc'] >= 0.58 else ("✓ R_OFF" if r['off_acc'] >= 0.62 and r['off_n'] >= 5 else "✗ WEAK")
-    print(f"{rel['name']:<38} {a:>7} {ro:>8} {ron:>7} {r['all_n']:>5}  {v}")
+    a_str  = f"{r['all_acc']*100:.1f}%"
+    # Fix 3 — show accuracy + count: "62.1% (45)"
+    if r['off_n'] >= 5:
+        ro_str = f"{r['off_acc']*100:.1f}% ({r['off_n']})"
+    else:
+        ro_str = f"n/a ({r['off_n']})"
+    ron_str = f"{r['on_acc']*100:.1f}%" if r['on_n'] >= 5 else f"n/a ({r['on_n']})"
+    v = ("✓ VALID" if r['all_acc'] >= 0.58
+         else ("✓ R_OFF" if r['off_acc'] >= 0.62 and r['off_n'] >= 5 else "✗ WEAK"))
+    print(f"{rel['name']:<42} {a_str:>7} {ro_str:>12} {ron_str:>7} {r['all_n']:>5}  {v}")
     all_results.append(r)
 
 print("\n-- DAILY (5-year Polygon + yfinance fallback) --")
@@ -270,18 +301,22 @@ for rel in DAILY_RELS:
     r = test_daily(rel, vix_regimes)
     if r['status'] != 'OK':
         n = r.get('total', 0)
-        print(f"{rel['name']:<38} {r['status']:>7}" + (f" ({n} obs)" if n else ""))
+        print(f"{rel['name']:<42} {r['status']:>7}" + (f" ({n} obs)" if n else ""))
         continue
-    a   = f"{r['all_acc']*100:.1f}%"
-    ro  = f"{r['off_acc']*100:.1f}%" if r['off_n'] >= 10 else "n/a"
-    ron = f"{r['on_acc']*100:.1f}%"  if r['on_n']  >= 10 else "n/a"
-    v   = "✓ VALID" if r['all_acc'] >= 0.58 else ("✓ R_OFF" if r['off_acc'] >= 0.62 and r['off_n'] >= 10 else "✗ WEAK")
-    print(f"{rel['name']:<38} {a:>7} {ro:>8} {ron:>7} {r['all_n']:>5}  {v}")
+    a_str  = f"{r['all_acc']*100:.1f}%"
+    if r['off_n'] >= 10:
+        ro_str = f"{r['off_acc']*100:.1f}% ({r['off_n']})"
+    else:
+        ro_str = f"n/a ({r['off_n']})"
+    ron_str = f"{r['on_acc']*100:.1f}%" if r['on_n'] >= 10 else f"n/a ({r['on_n']})"
+    v = ("✓ VALID" if r['all_acc'] >= 0.58
+         else ("✓ R_OFF" if r['off_acc'] >= 0.62 and r['off_n'] >= 10 else "✗ WEAK"))
+    print(f"{rel['name']:<42} {a_str:>7} {ro_str:>12} {ron_str:>7} {r['all_n']:>5}  {v}")
     all_results.append(r)
 
-print("\n" + "=" * 75)
+print("\n" + "=" * 82)
 print("SUMMARY")
-print("=" * 75)
+print("=" * 82)
 
 ok = [r for r in all_results if r['status'] == 'OK']
 if ok:
@@ -291,7 +326,7 @@ if ok:
     avg_ro       = sum(r['off_acc'] for r in ro_ok) / len(ro_ok) if ro_ok else 0
     validated_ro = [r for r in ro_ok if r['off_acc'] >= 0.62]
 
-    print(f"Total tested:                {len(ok)}/30")
+    print(f"Total tested:                {len(ok)}/35")
     print(f"Validated overall (≥58%):    {len(validated)}/{len(ok)}")
     print(f"Validated RISK_OFF (≥62%):   {len(validated_ro)}/{len(ro_ok)}")
     print(f"Overall accuracy:            {avg_all*100:.1f}%")
@@ -308,7 +343,7 @@ if ok:
     print("\nTop 7 RISK_OFF:")
     top = sorted(ro_ok, key=lambda x: x['off_acc'], reverse=True)[:7]
     for r in top:
-        print(f"  {r['name']:<40}: {r['off_acc']*100:.1f}%  ({r['off_n']} obs)")
+        print(f"  {r['name']:<44}: {r['off_acc']*100:.1f}%  ({r['off_n']} obs)")
 
     print(f"\nKRIMAJLIS RISK_OFF ACCURACY:  {avg_ro*100:.1f}%")
     print(f"KRIMAJLIS OVERALL ACCURACY:   {avg_all*100:.1f}%")
@@ -321,4 +356,4 @@ if ok:
         print("\n✗ BELOW GRADE")
 
 print(f"\nDone: {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}")
-print("=" * 75)
+print("=" * 82)
