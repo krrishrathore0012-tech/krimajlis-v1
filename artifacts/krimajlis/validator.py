@@ -60,6 +60,9 @@ def validate_pending_signals():
                 if entry_price is None or entry_price == 0:
                     entry_price = current_price
                 move_pct = ((current_price - entry_price) / entry_price) * 100 if entry_price else 0
+                if abs(move_pct) < 0.05:
+                    print(f"[Validator] Skipping {signal['ticker']} — price unchanged, market likely closed or stale data")
+                    continue
                 if direction == 'LONG':
                     outcome = 'HIT' if move_pct > 0.1 else 'MISS'
                     realized_direction = 'UP' if move_pct > 0 else 'DOWN'
