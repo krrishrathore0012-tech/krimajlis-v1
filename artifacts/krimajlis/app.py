@@ -648,53 +648,68 @@ def paper_trade():
     return jsonify({"status": "logged", "trade_id": trade["trade_id"], "trade": trade})
 
 
-@app.route("/api/paper-trade/close", methods=["POST"])
+@app.route('/api/paper-trade/close', methods=['POST'])
 def close_paper_trade():
-    data = request.get_json(silent=True) or {}
-    trade_id = data.get("trade_id")
-    exit_price = data.get("exit_price")
+    data = request.json
+    trade_id = data.get('trade_id')
 
-    for trade in paper_trades:
-        if trade.get("trade_id") == trade_id:
-            if exit_price is None:
-                current = _get_entry_price(trade.get("ticker", ""))
-                exit_price = current
-            entry = trade.get("entry_price") or 100.0
-            direction = trade.get("direction", "LONG")
-            if direction == "SHORT" or direction == "SELL_VOL":
-                raw_pnl = ((entry - exit_price) / entry) * 100
-            else:
-                raw_pnl = ((exit_price - entry) / entry) * 100
-            realized_pnl = round(raw_pnl, 3)
-            if DB_AVAILABLE:
-                try:
-                    safe_db_update(
-                        'paper_trades',
-                        {'trade_id': trade_id},
-                        {
-                            'status': 'CLOSED',
-                            'exit_price': float(exit_price),
-                            'realized_pnl': float(realized_pnl),
-                            'outcome': 'WIN' if realized_pnl > 0 else 'LOSS',
-                            'closed_at': datetime.utcnow().isoformat()
-                        }
-                    )
-                except Exception as e:
-                    print(f"[KRIMAJLIS] Close trade DB update error: {e}")
+    trade = None
+    for t in paper_trades:
+        if t.get('trade_id') == trade_id:
+            trade = t
+            break
 
-            opened = datetime.fromisoformat(trade["timestamp"])
-            sessions_held = max(1, int((datetime.utcnow() - opened).total_seconds() / 3600))
+    if not trade:
+        if DB_AVAILABLE:
+            try:
+                db_trades = safe_db_read('paper_trades', limit=500)
+                for t in db_trades:
+                    if t.get('trade_id') == trade_id:
+                        trade = t
+                        break
+            except Exception:
+                pass
 
-            trade.update({
-                "exit_price": round(exit_price, 4),
-                "realized_pnl": realized_pnl,
-                "sessions_held": sessions_held,
-                "outcome": "WIN" if realized_pnl > 0 else "LOSS",
-                "status": "CLOSED",
-            })
-            return jsonify({"status": "closed", "trade": trade})
+    if not trade:
+        return jsonify({'error': 'Trade not found'}), 404
 
-    return jsonify({"error": "trade not found"}), 404
+    ticker = trade.get('ticker', '')
+    entry_price = float(trade.get('entry_price', 100.0))
+    exit_price = _get_entry_price(ticker)
+    if exit_price is None or exit_price == 0:
+        exit_price = entry_price
+
+    direction = trade.get('direction', 'LONG')
+    if direction == 'LONG':
+        realized_pnl = ((exit_price - entry_price) / entry_price) * 100
+    else:
+        realized_pnl = ((entry_price - exit_price) / entry_price) * 100
+
+    realized_pnl = round(realized_pnl, 4)
+
+    trade['status'] = 'CLOSED'
+    trade['exit_price'] = exit_price
+    trade['realized_pnl'] = realized_pnl
+    trade['outcome'] = 'WIN' if realized_pnl > 0 else 'LOSS'
+    trade['closed_at'] = datetime.utcnow().isoformat()
+
+    if DB_AVAILABLE:
+        try:
+            safe_db_update(
+                'paper_trades',
+                {'trade_id': trade_id},
+                {
+                    'status': 'CLOSED',
+                    'exit_price': float(exit_price),
+                    'realized_pnl': float(realized_pnl),
+                    'outcome': 'WIN' if realized_pnl > 0 else 'LOSS',
+                    'closed_at': datetime.utcnow().isoformat()
+                }
+            )
+        except Exception as e:
+            print(f"[KRIMAJLIS] Close trade DB update error: {e}")
+
+    return jsonify({'status': 'closed', 'trade': trade})
 
 
 @app.route("/api/paper-trades", methods=["GET"])
