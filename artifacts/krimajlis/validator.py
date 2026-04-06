@@ -6,10 +6,10 @@ import json
 TICKER_MAP = {
     'SPY': 'SPY', 'HYG': 'HYG', 'TLT': 'TLT', 'GLD': 'GLD',
     'EWJ': 'EWJ', 'XME': 'XME', 'KBE': 'KBE', 'EEM': 'EEM',
-    'VXX': 'VXX', 'SVXY': 'SVXY', 'XLK': 'XLK', 'AGG': 'AGG',
-    'VNQ': 'VNQ', 'DJP': 'DJP', 'JETS': 'JETS', 'SHW': 'SHW',
-    'BOAT': 'BOAT', 'TIO': 'TIO', 'EWA': 'EWA', 'CEW': 'CEW',
-    'GDX': 'GDX', 'AUDUSD=X': 'AUDUSD=X', 'USDINR=X': 'USDINR=X',
+    'VXX': 'VXX', 'XLK': 'XLK', 'AGG': 'AGG', 'XLB': 'XLB',
+    'VNQ': 'VNQ', 'DJP': 'DJP', 'JETS': 'JETS', 'BDRY': 'BDRY',
+    'CEW': 'CEW', 'EWA': 'EWA', 'GDX': 'GDX', 'SLV': 'SLV',
+    'PDBC': 'PDBC', 'AUDUSD=X': 'AUDUSD=X', 'USDINR=X': 'USDINR=X',
     '^NSEI': '^NSEI', '^GSPC': '^GSPC', 'DX-Y.NYB': 'DX-Y.NYB'
 }
 
