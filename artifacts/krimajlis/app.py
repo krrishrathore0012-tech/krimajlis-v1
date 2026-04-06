@@ -230,36 +230,41 @@ _last_persisted_ids = set()
 def persist_signals_to_db(signals):
     if not DB_AVAILABLE:
         return
-    global _last_persisted_ids
     try:
-        new_ids = {s.get("signal_id") for s in signals}
-        if new_ids == _last_persisted_ids:
-            return
-        _last_persisted_ids = new_ids
-        node_snapshot = list(state.get("primary_nodes", {}).values())[:6]
+        from datetime import datetime, timedelta
+        seen_ids = getattr(persist_signals_to_db, '_seen_ids', set())
         for signal in signals[:25]:
-            entry_window_hours = signal.get("expected_reversion_sessions", 2)
+            sig_id = signal.get('signal_id', '')
+            if sig_id in seen_ids:
+                continue
+            seen_ids.add(sig_id)
+            persist_signals_to_db._seen_ids = seen_ids
+            ticker = signal.get('ticker', '')
+            entry_price = _get_entry_price(ticker)
+            if entry_price is None or entry_price == 0:
+                entry_price = 100.0
+            entry_window_hours = signal.get('expected_reversion_sessions', 2)
             expires_at = datetime.utcnow() + timedelta(hours=entry_window_hours * 6)
             db_record = {
-                "signal_id": signal.get("signal_id", str(uuid.uuid4())),
-                "ticker": signal.get("ticker", ""),
-                "instrument_name": signal.get("instrument_name", ""),
-                "geography": signal.get("geography", ""),
-                "direction": signal.get("direction", ""),
-                "conviction": float(signal.get("conviction", 0)),
-                "loophole_type": signal.get("loophole_type", ""),
-                "alpha_layer": str(signal.get("alpha_layer", "")),
-                "rationale": signal.get("rationale", ""),
-                "gap_to_theoretical": float(signal.get("gap_to_theoretical", 0)),
-                "expected_reversion_sessions": int(signal.get("expected_reversion_sessions", 2)),
-                "regime_alignment": bool(signal.get("regime_alignment", False)),
-                "causal_chain": json.dumps(signal.get("causal_chain", [])),
-                "regime_state": json.dumps(state.get("regime", {})),
-                "primary_node_snapshot": json.dumps(node_snapshot),
-                "entry_window_expires_at": expires_at.isoformat(),
-                "validation_status": "PENDING",
+                'signal_id': sig_id,
+                'ticker': ticker,
+                'instrument_name': signal.get('instrument_name', ''),
+                'geography': signal.get('geography', ''),
+                'direction': signal.get('direction', ''),
+                'conviction': float(signal.get('conviction', 0)),
+                'loophole_type': signal.get('loophole_type', ''),
+                'alpha_layer': str(signal.get('alpha_layer', '')),
+                'rationale': signal.get('rationale', ''),
+                'gap_to_theoretical': float(signal.get('gap_to_theoretical', 0)),
+                'expected_reversion_sessions': int(signal.get('expected_reversion_sessions', 2)),
+                'regime_alignment': bool(signal.get('regime_alignment', False)),
+                'causal_chain': json.dumps(signal.get('causal_chain', [])),
+                'regime_state': json.dumps(state.get('regime', {})),
+                'primary_node_snapshot': json.dumps({'entry_price': entry_price, 'ticker': ticker}),
+                'entry_window_expires_at': expires_at.isoformat(),
+                'validation_status': 'PENDING'
             }
-            safe_db_write("signals", db_record)
+            safe_db_write('signals', db_record)
     except Exception as e:
         print(f"[KRIMAJLIS] Signal persist error: {e}")
 
@@ -817,7 +822,7 @@ def start_scheduler():
     scheduler.add_job(
         validate_pending_signals,
         "cron",
-        hour="9,12,15,18,21",
+        hour="9,12,14,15,18,21",
         minute=30,
         id="validator",
     )
