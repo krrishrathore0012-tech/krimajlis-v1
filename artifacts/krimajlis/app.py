@@ -843,7 +843,12 @@ def cleanup_stale_validations():
             'realized_move_pct': None,
             'validated_at': None
         }).eq('realized_move_pct', 0.0).execute()
-        print("[KRIMAJLIS] Cleaned stale zero-move validations")
+        for bad_ticker in ['TIO', 'SHW', 'DJP', 'BOAT', 'CEW', 'SVXY']:
+            try:
+                db.table('signals').delete().eq('ticker', bad_ticker).execute()
+            except Exception:
+                pass
+        print("[KRIMAJLIS] Cleaned stale validations and bad tickers")
     except Exception as e:
         print(f"[KRIMAJLIS] Cleanup error: {e}")
 

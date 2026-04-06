@@ -15,14 +15,39 @@ TICKER_MAP = {
 
 
 def fetch_current_price(ticker: str) -> float:
+    import requests as req
+
+    yf_ticker = TICKER_MAP.get(ticker, ticker)
+
     try:
-        yf_ticker = TICKER_MAP.get(ticker, ticker)
+        url = f"https://query1.finance.yahoo.com/v8/finance/chart/{yf_ticker}"
+        params = {
+            'interval': '1m',
+            'range': '1d',
+            'includePrePost': 'true'
+        }
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        }
+        r = req.get(url, params=params, headers=headers, timeout=10)
+        data = r.json()
+        result = data.get('chart', {}).get('result', [])
+        if result:
+            meta = result[0].get('meta', {})
+            price = meta.get('regularMarketPrice') or meta.get('previousClose')
+            if price and price > 0:
+                return float(price)
+    except Exception as e:
+        print(f"Yahoo direct fetch failed for {ticker}: {e}")
+
+    try:
         t = yf.Ticker(yf_ticker)
         hist = t.history(period='1d', interval='5m')
         if not hist.empty:
             return float(hist['Close'].iloc[-1])
-    except Exception as e:
-        print(f"Price fetch failed for {ticker}: {e}")
+    except Exception:
+        pass
+
     return None
 
 
