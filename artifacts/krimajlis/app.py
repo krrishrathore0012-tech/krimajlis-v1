@@ -32,7 +32,7 @@ except ImportError:
     REQUESTS_AVAILABLE = False
 
 try:
-    from db import safe_db_write, safe_db_read, safe_db_update
+    from db import safe_db_write, safe_db_read, safe_db_update, get_db
     from validator import validate_pending_signals, compute_accuracy_summary
     DB_AVAILABLE = True
     print("[KRIMAJLIS] Supabase connected")
@@ -629,6 +629,22 @@ def paper_trade():
         "status": "OPEN",
     }
     paper_trades.append(trade)
+    if DB_AVAILABLE:
+        try:
+            db_trade = {
+                'trade_id': trade['trade_id'],
+                'signal_id': trade.get('signal_id', ''),
+                'ticker': trade['ticker'],
+                'direction': trade['direction'],
+                'conviction': float(trade.get('conviction', 0)),
+                'entry_price': float(trade.get('entry_price', 100.0)),
+                'status': 'OPEN',
+                'alpha_layer': str(trade.get('layer', '')),
+                'created_at': trade['timestamp']
+            }
+            safe_db_write('paper_trades', db_trade)
+        except Exception as e:
+            print(f"[KRIMAJLIS] Paper trade DB write error: {e}")
     return jsonify({"status": "logged", "trade_id": trade["trade_id"], "trade": trade})
 
 
@@ -650,6 +666,21 @@ def close_paper_trade():
             else:
                 raw_pnl = ((exit_price - entry) / entry) * 100
             realized_pnl = round(raw_pnl, 3)
+            if DB_AVAILABLE:
+                try:
+                    safe_db_update(
+                        'paper_trades',
+                        {'trade_id': trade_id},
+                        {
+                            'status': 'CLOSED',
+                            'exit_price': float(exit_price),
+                            'realized_pnl': float(realized_pnl),
+                            'outcome': 'WIN' if realized_pnl > 0 else 'LOSS',
+                            'closed_at': datetime.utcnow().isoformat()
+                        }
+                    )
+                except Exception as e:
+                    print(f"[KRIMAJLIS] Close trade DB update error: {e}")
 
             opened = datetime.fromisoformat(trade["timestamp"])
             sessions_held = max(1, int((datetime.utcnow() - opened).total_seconds() / 3600))
@@ -668,6 +699,13 @@ def close_paper_trade():
 
 @app.route("/api/paper-trades", methods=["GET"])
 def get_paper_trades():
+    if DB_AVAILABLE:
+        try:
+            db_trades = safe_db_read('paper_trades', limit=500)
+            if db_trades:
+                return jsonify(db_trades)
+        except Exception as e:
+            print(f"[KRIMAJLIS] Paper trades DB read error: {e}")
     return jsonify(paper_trades)
 
 
@@ -778,6 +816,55 @@ def start_scheduler():
     scheduler.start()
     print("[KRIMAJLIS] Scheduler started — validator runs at 9:30, 12:30, 15:30, 18:30, 21:30 UTC")
 
+
+def cleanup_stale_validations():
+    if not DB_AVAILABLE:
+        return
+    try:
+        db = get_db()
+        db.table('signals').update({
+            'validation_status': 'PENDING',
+            'outcome': None,
+            'realized_move_pct': None,
+            'validated_at': None
+        }).eq('realized_move_pct', 0.0).execute()
+        print("[KRIMAJLIS] Cleaned stale zero-move validations")
+    except Exception as e:
+        print(f"[KRIMAJLIS] Cleanup error: {e}")
+
+
+def migrate_memory_trades_to_db():
+    if not DB_AVAILABLE:
+        return
+    if not paper_trades:
+        return
+    try:
+        existing = safe_db_read('paper_trades', limit=100)
+        existing_ids = {t.get('trade_id') for t in existing}
+        migrated = 0
+        for trade in paper_trades:
+            if trade.get('trade_id') not in existing_ids:
+                db_trade = {
+                    'trade_id': trade['trade_id'],
+                    'signal_id': trade.get('signal_id', ''),
+                    'ticker': trade['ticker'],
+                    'direction': trade['direction'],
+                    'conviction': float(trade.get('conviction', 0)),
+                    'entry_price': float(trade.get('entry_price', 100.0)),
+                    'status': trade.get('status', 'OPEN'),
+                    'alpha_layer': str(trade.get('layer', '')),
+                    'created_at': trade.get('timestamp', datetime.utcnow().isoformat())
+                }
+                safe_db_write('paper_trades', db_trade)
+                migrated += 1
+        if migrated > 0:
+            print(f"[KRIMAJLIS] Migrated {migrated} trades to Supabase")
+    except Exception as e:
+        print(f"[KRIMAJLIS] Migration error: {e}")
+
+
+cleanup_stale_validations()
+migrate_memory_trades_to_db()
 
 try:
     if DB_AVAILABLE:
