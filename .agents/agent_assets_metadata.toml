@@ -6,3 +6,9 @@ id = "APMeIToPjtC3O6zFrlRNn"
 uri = "file://KRIMAJLIS.zip"
 type = "unspecified"
 title = "KRIMAJLIS — Full Source"
+
+[[outputs]]
+id = "dq40KYD4IXwQv32ZuJCGD"
+uri = "file://krimajlis_latest.zip"
+type = "unspecified"
+title = "KRIMAJLIS — Latest Source (commit 5e6d9b6)"
