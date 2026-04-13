@@ -1,0 +1,92 @@
+==================================================================================
+KRYSSALIS BACKTEST v5 — UPGRADED (4 systematic fixes)
+Trigger: 1.5σ (RISK_OFF) / 2.0σ (RISK_ON)
+Lag: window [0.5×,2.0×] lag_bars
+Min target move: 0.3%
+Run: 2026-04-13 16:48 UTC
+==================================================================================
+
+Building VIX regime...
+Polygon VIX unavailable — using yfinance ^VIX...
+Regime: 564 RISK_OFF / 841 RISK_ON (40.1% RISK_OFF)
+
+Relationship                                   All    R_OFF (n)    R_ON     N  Status
+----------------------------------------------------------------------------------
+
+-- INTRADAY (60-minute bars, 59 days) --
+HYG → SPY (2h lag)                           50.0%   50.0% (12) n/a (0)    12  ✗ WEAK
+HYG → SPY (4h lag)                           55.6%   52.9% (17) n/a (1)    18  ✗ WEAK
+HYG → TLT (4h lag)                           62.5%   62.5% (16) n/a (0)    16  ✓ VALID
+HYG → KBE (4h lag)                           36.8%   38.9% (18) n/a (1)    19  ✗ WEAK
+HYG → EEM (6h lag)                           36.8%   38.9% (18) n/a (1)    19  ✗ WEAK
+HYG → AGG (4h lag)                         INSUFFICIENT (8 obs)
+SPY → EWJ (8h lag)                           40.0%   36.8% (19) n/a (1)    20  ✗ WEAK
+SPY → EEM (6h lag)                           28.6%   26.3% (19) n/a (2)    21  ✗ WEAK
+SPY → GLD (4h lag)                           42.9%   42.1% (19) n/a (2)    21  ✗ WEAK
+SPY → GLD (8h lag)                           47.6%   47.4% (19) n/a (2)    21  ✗ WEAK
+SPY → XLK (2h lag)                           27.8%   31.2% (16) n/a (2)    18  ✗ WEAK
+SPY → JETS (6h lag)                          38.1%   36.8% (19) n/a (2)    21  ✗ WEAK
+SPY → VNQ (4h lag)                           40.0%   38.9% (18) n/a (2)    20  ✗ WEAK
+SPY → XME (8h lag)                           42.9%   36.8% (19) n/a (2)    21  ✗ WEAK
+GLD → GDX (2h lag)                           53.8%    77.8% (9) n/a (4)    13  ✓ R_OFF
+GLD → GDX (4h lag)                           23.1%    22.2% (9) n/a (4)    13  ✗ WEAK
+GLD → SLV (2h lag)                           30.8%    44.4% (9) n/a (4)    13  ✗ WEAK
+GLD → AGG (6h lag)                         INSUFFICIENT (3 obs)
+SPY → EWJ (12h lag)                          47.4%   44.4% (18) n/a (1)    19  ✗ WEAK
+HYG → SPY (6h lag)                           57.9%   55.6% (18) n/a (1)    19  ✗ WEAK
+
+-- DAILY (5-year Polygon + yfinance fallback) --
+SPY → GLD daily T+1                          61.9%   65.0% (20) n/a (1)    21  ✓ VALID
+GLD → GDX daily T+1                          40.0%   50.0% (12) n/a (3)    15  ✗ WEAK
+GLD → AGG daily T+1                          55.2%   50.0% (24) n/a (5)    29  ✗ WEAK
+HYG → SPY daily T+1                          44.3%   45.3% (64) n/a (3)    70  ✗ WEAK
+HYG → SPY daily T+2                          45.7%   46.9% (64) n/a (3)    70  ✗ WEAK
+SPY → EWJ daily T+1                          44.3%   42.4% (66) n/a (1)    70  ✗ WEAK
+SPY → EEM daily T+1                          42.0%   41.5% (65) n/a (1)    69  ✗ WEAK
+HYG → EEM daily T+1                          43.5%   42.9% (63) n/a (3)    69  ✗ WEAK
+HYG → TLT daily T+1                          47.1%   48.4% (62) n/a (3)    68  ✗ WEAK
+SPY → XLK daily T+1                          50.0%   50.0% (66) n/a (1)    70  ✗ WEAK
+GLD → SLV daily T+1                          60.3%   57.9% (38)   66.7%    58  ✓ VALID
+SPY → JETS daily T+2                         36.1%   36.8% (68) n/a (1)    72  ✗ WEAK
+SPY → XME daily T+2                          38.9%   39.7% (68) n/a (1)    72  ✗ WEAK
+HYG → KBE daily T+1                          48.6%   48.4% (64) n/a (3)    70  ✗ WEAK
+SPY → VNQ daily T+1                          56.9%   57.4% (68) n/a (1)    72  ✗ WEAK
+
+==================================================================================
+SUMMARY — v5 vs v4 COMPARISON
+==================================================================================
+
+  v4 baseline overall:    46.7%  →  v5: 44.8%  (Δ -1.9pp)
+  v4 baseline RISK_OFF:   46.9%  →  v5: 45.7%  (Δ -1.2pp)
+  v4 validated:           1/35   →  v5: 3/33
+  v4 RISK_OFF validated:  1/35   →  v5: 3/33
+
+  By type — RISK_OFF accuracy:
+    TRANSMISSION_LAG         : 48.5%  (2/19 validated)
+    INSTITUTIONAL_FLOW       : 43.4%  (1/10 validated)
+    SUPPLY_CHAIN_ECHO        : 37.5%  (0/4 validated)
+
+  Top signals by RISK_OFF accuracy:
+    ✓ GLD → GDX (2h lag)                          : 77.8% RISK_OFF  53.8% all  (stated 79%)  n=9
+    ✓ SPY → GLD daily T+1                         : 65.0% RISK_OFF  61.9% all  (stated 71%)  n=20
+    ✓ HYG → TLT (4h lag)                          : 62.5% RISK_OFF  62.5% all  (stated 74%)  n=16
+    ○ GLD → SLV daily T+1                         : 57.9% RISK_OFF  60.3% all  (stated 78%)  n=38
+    ○ SPY → VNQ daily T+1                         : 57.4% RISK_OFF  56.9% all  (stated 73%)  n=68
+    ○ HYG → SPY (6h lag)                          : 55.6% RISK_OFF  57.9% all  (stated 82%)  n=18
+    ○ HYG → SPY (4h lag)                          : 52.9% RISK_OFF  55.6% all  (stated 82%)  n=17
+    ○ HYG → SPY (2h lag)                          : 50.0% RISK_OFF  50.0% all  (stated 82%)  n=12
+    ○ GLD → GDX daily T+1                         : 50.0% RISK_OFF  40.0% all  (stated 79%)  n=12
+    ○ GLD → AGG daily T+1                         : 50.0% RISK_OFF  55.2% all  (stated 70%)  n=24
+
+  KRYSSALIS v5 RISK_OFF ACCURACY:  45.7%
+  KRYSSALIS v5 OVERALL ACCURACY:   44.8%
+
+  ✗ BELOW GRADE — further calibration required
+
+  Next step: run backtest_v6.py with regime-window isolation
+  (exclude March–April 2026 tariff shock from daily series)
+
+  Results saved: backtest_v5_results.json
+
+Done: 2026-04-13 16:48 UTC
+==================================================================================
