@@ -1,0 +1,44 @@
+{
+  "run_timestamp": "2026-04-13 16:33 UTC",
+  "data_sources": {
+    "intraday": "yfinance 60-minute bars, 59 days",
+    "daily": "Polygon 5-year daily + yfinance fallback",
+    "regime": "VIX > 20 threshold (Polygon 5yr, yfinance ^VIX fallback)"
+  },
+  "regime_split": {
+    "risk_off_days": 564,
+    "risk_on_days": 841,
+    "risk_off_pct": 40.1
+  },
+  "overall_accuracy": 46.7,
+  "risk_off_accuracy": 46.9,
+  "total_tested": 35,
+  "total_validated_overall": 1,
+  "total_validated_risk_off": 1,
+  "acquisition_grade_met": false,
+  "acquisition_threshold_risk_off": 70.0,
+  "top_7_risk_off": [
+    { "name": "GLD → AGG daily T+1",   "risk_off_accuracy": 74.1, "n_obs": 27  },
+    { "name": "SPY → EWJ (12h lag)",   "risk_off_accuracy": 57.1, "n_obs": 28  },
+    { "name": "HYG → SPY (4h lag)",    "risk_off_accuracy": 55.9, "n_obs": 34  },
+    { "name": "SPY → JETS daily T+2",  "risk_off_accuracy": 55.0, "n_obs": 131 },
+    { "name": "SPY → EWJ (8h lag)",    "risk_off_accuracy": 53.6, "n_obs": 28  },
+    { "name": "SPY → XLK (2h lag)",    "risk_off_accuracy": 53.6, "n_obs": 28  },
+    { "name": "HYG → SPY (2h lag)",    "risk_off_accuracy": 52.9, "n_obs": 34  }
+  ],
+  "accuracy_by_type": {
+    "TRANSMISSION_LAG":   { "risk_off_accuracy": 46.7, "validated": 0, "tested": 19 },
+    "INSTITUTIONAL_FLOW": { "risk_off_accuracy": 48.9, "validated": 1, "tested": 12 },
+    "SUPPLY_CHAIN_ECHO":  { "risk_off_accuracy": 42.1, "validated": 0, "tested": 4  }
+  },
+  "validated_relationships": [
+    {
+      "name": "GLD → AGG daily T+1",
+      "type": "INSTITUTIONAL_FLOW",
+      "risk_off_accuracy": 74.1,
+      "overall_accuracy": 62.7,
+      "n_obs": 27,
+      "status": "VALID"
+    }
+  ]
+}
