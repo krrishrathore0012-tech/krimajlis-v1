@@ -1,0 +1,75 @@
+==================================================================================
+KRYSSALIS BACKTEST v6 — DAILY-ONLY (v5 fixes, 15 relationships)
+Trigger: 1.5σ (RISK_OFF) / 2.0σ (RISK_ON)
+Lag: window [0.5×,2.0×] lag_bars
+Min target move: 0.3%
+Run: 2026-04-13 16:52 UTC
+==================================================================================
+
+Building VIX regime...
+Polygon VIX unavailable — using yfinance ^VIX...
+Regime: 564 RISK_OFF / 841 RISK_ON (40.1% RISK_OFF)
+
+Relationship                                   All    R_OFF (n)    R_ON     N  Status
+----------------------------------------------------------------------------------
+
+-- DAILY (5-year Polygon + yfinance fallback, 15 relationships) --
+SPY → GLD daily T+1                          61.9%   65.0% (20) n/a (1)    21  ✓ VALID
+GLD → GDX daily T+1                          40.0%   50.0% (12) n/a (3)    15  ✗ WEAK
+GLD → AGG daily T+1                          55.2%   50.0% (24) n/a (5)    29  ✗ WEAK
+HYG → SPY daily T+1                          44.3%   45.3% (64) n/a (3)    70  ✗ WEAK
+HYG → SPY daily T+2                          45.7%   46.9% (64) n/a (3)    70  ✗ WEAK
+SPY → EWJ daily T+1                          44.3%   42.4% (66) n/a (1)    70  ✗ WEAK
+SPY → EEM daily T+1                          42.0%   41.5% (65) n/a (1)    69  ✗ WEAK
+HYG → EEM daily T+1                          43.5%   42.9% (63) n/a (3)    69  ✗ WEAK
+HYG → TLT daily T+1                          47.1%   48.4% (62) n/a (3)    68  ✗ WEAK
+SPY → XLK daily T+1                          50.0%   50.0% (66) n/a (1)    70  ✗ WEAK
+GLD → SLV daily T+1                          60.3%   57.9% (38)   66.7%    58  ✓ VALID
+SPY → JETS daily T+2                         36.1%   36.8% (68) n/a (1)    72  ✗ WEAK
+SPY → XME daily T+2                          38.9%   39.7% (68) n/a (1)    72  ✗ WEAK
+HYG → KBE daily T+1                          48.6%   48.4% (64) n/a (3)    70  ✗ WEAK
+SPY → VNQ daily T+1                          56.9%   57.4% (68) n/a (1)    72  ✗ WEAK
+
+==================================================================================
+SUMMARY — v6 DAILY-ONLY
+==================================================================================
+
+  Relationships tested:    15
+  Returned OK results:     15/15
+  Overall accuracy:        47.7%
+  RISK_OFF accuracy:       48.2%
+  Validated ≥58% overall:  2/15
+  Validated ≥62% R_OFF:    1/15
+  Validated ≥70% R_OFF:    0/15
+
+  By type — RISK_OFF accuracy:
+    TRANSMISSION_LAG         : 52.6%  (≥62%: 1/8  ≥70%: 0/8)
+    INSTITUTIONAL_FLOW       : 45.0%  (≥62%: 0/5  ≥70%: 0/5)
+    SUPPLY_CHAIN_ECHO        : 38.2%  (≥62%: 0/2  ≥70%: 0/2)
+
+  All 15 signals ranked by RISK_OFF accuracy:
+    ✓ SPY → GLD daily T+1                         : 65.0% R_OFF  61.9% all  (stated 71%)  n=20
+    ○ GLD → SLV daily T+1                         : 57.9% R_OFF  60.3% all  (stated 78%)  n=38
+    ○ SPY → VNQ daily T+1                         : 57.4% R_OFF  56.9% all  (stated 73%)  n=68
+    ○ GLD → GDX daily T+1                         : 50.0% R_OFF  40.0% all  (stated 79%)  n=12
+    ○ GLD → AGG daily T+1                         : 50.0% R_OFF  55.2% all  (stated 70%)  n=24
+    ○ SPY → XLK daily T+1                         : 50.0% R_OFF  50.0% all  (stated 83%)  n=66
+    ○ HYG → TLT daily T+1                         : 48.4% R_OFF  47.1% all  (stated 74%)  n=62
+    ○ HYG → KBE daily T+1                         : 48.4% R_OFF  48.6% all  (stated 72%)  n=64
+    ○ HYG → SPY daily T+2                         : 46.9% R_OFF  45.7% all  (stated 82%)  n=64
+    ○ HYG → SPY daily T+1                         : 45.3% R_OFF  44.3% all  (stated 82%)  n=64
+    ○ HYG → EEM daily T+1                         : 42.9% R_OFF  43.5% all  (stated 72%)  n=63
+    ○ SPY → EWJ daily T+1                         : 42.4% R_OFF  44.3% all  (stated 81%)  n=66
+    ○ SPY → EEM daily T+1                         : 41.5% R_OFF  42.0% all  (stated 77%)  n=65
+    ○ SPY → XME daily T+2                         : 39.7% R_OFF  38.9% all  (stated 71%)  n=68
+    ○ SPY → JETS daily T+2                        : 36.8% R_OFF  36.1% all  (stated 74%)  n=68
+
+  KRYSSALIS v6 RISK_OFF ACCURACY:  48.2%
+  KRYSSALIS v6 OVERALL ACCURACY:   47.7%
+
+  ✗ BELOW GRADE — further calibration required
+
+  Results saved: backtest_v6_results.json
+
+Done: 2026-04-13 16:52 UTC
+==================================================================================
