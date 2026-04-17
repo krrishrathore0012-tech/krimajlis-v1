@@ -30,3 +30,15 @@ id = "0HBm4vxGsU_8NWJY5eTyZ"
 uri = "file://artifacts/krimajlis/results/krimajlis_paper_trade_v8_report.md"
 type = "text"
 title = "KRIMAJLIS v8 Paper Trade — Acquisition Report (Markdown)"
+
+[[outputs]]
+id = "8cTRYrVl6dqGhWDRHNBso"
+uri = "file://artifacts/krimajlis/results/krimajlis_paper_trade_v8_institutional.json"
+type = "unspecified"
+title = "Variant B JSON — Institutional Scale (₹10 Cr, 580 trades)"
+
+[[outputs]]
+id = "FAzIpvgovjb-gn9nYPJdr"
+uri = "file://artifacts/krimajlis/results/krimajlis_paper_trade_v8_institutional_report.md"
+type = "text"
+title = "Variant B Acquisition Report — Institutional Scale"
