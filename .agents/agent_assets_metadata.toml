@@ -18,3 +18,15 @@ id = "IAmnatoQ4euVVRnDltFpV"
 uri = "file://artifacts/krimajlis/krimajlis_v8_clean.zip"
 type = "unspecified"
 title = "KRIMAJLIS v8 — Clean Production Package"
+
+[[outputs]]
+id = "5D5EVxvnrfNfKBrtEICXe"
+uri = "file://artifacts/krimajlis/results/krimajlis_paper_trade_v8.json"
+type = "unspecified"
+title = "KRIMAJLIS v8 Paper Trade — Machine-Readable JSON (580 trades)"
+
+[[outputs]]
+id = "0HBm4vxGsU_8NWJY5eTyZ"
+uri = "file://artifacts/krimajlis/results/krimajlis_paper_trade_v8_report.md"
+type = "text"
+title = "KRIMAJLIS v8 Paper Trade — Acquisition Report (Markdown)"
