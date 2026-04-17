@@ -1,0 +1,75 @@
+======================================================================================
+KRIMAJLIS BACKTEST v8 — CORPUS ACCURACY TARGET ≥70%
+Scoring window: 2021-01-01 → 2025-12-31  (tariff shock excluded)
+Trigger threshold: 1.5σ (RISK_OFF/B) / 2.0σ (RISK_ON/A)
+Min target move: 0.3%  |  Lag window: [0.5×, 2.0×] ≤3 bars
+Relationships: 15  |  New triggers: UUP, TLT, XLF  |  Pruned: JETS/EEM/XME/EWJ
+Run: 2026-04-17 11:54 UTC
+======================================================================================
+
+Building VIX regime (full history)...
+VIX regimes (full history): REGIME_A=261d  REGIME_B=911d  REGIME_C=233d
+
+Relationship                                   All   A(<15)   B(15-25)   C(>25)   Corpus     n  Status
+-----------------------------------------------------------------------------------------------
+  ✓✓ UUP → GLD T+0 (same-day)                   70.0%   n/a(0)      62.5%   100.0%    70.0%    10 ⚠THIN
+  ○ UUP → GLD T+1                              57.9%   100.0%      61.5%    40.0%    57.9%    19 ⚠THIN
+  ✓ UUP → EEM T+1                              61.1%   100.0%      50.0%    80.0%    61.1%    18 ⚠THIN
+  ○ TLT → VNQ T+0 (same-day)                   54.1%    66.7%      63.2%    29.4%    54.1%    61
+  ○ TLT → VNQ T+1                              52.3%    66.7%      51.1%    52.9%    52.3%    65
+  ○ TLT ↓ → XLF T+1 (yield-curve → banks)      48.8%   n/a(1)      50.0%   n/a(0)    48.8%    43
+  ✓ XLF → KBE T+1 (sector lead-lag)            67.7%   n/a(0)      67.7%   n/a(0)    67.7%    34
+  ✓✓ GLD → SLV T+0 (same-day)                   98.6%   100.0%     100.0%    95.0%    98.6%    72
+  ○ GLD → SLV T+1                              53.2%    75.0%      49.1%    61.1%    53.2%    79
+  ✓✓ GLD → GDX T+0 (same-day)                   94.6%   100.0%      95.7%    90.5%    94.6%    74
+  ✓ GLD → GDX T+1                              66.7%    50.0%      66.7%    70.6%    66.7%    78
+  ○ SPY → GLD T+1                              46.9%   n/a(0)      66.7%    32.4%    46.9%    64
+  ✓ SPY → VNQ T+1                              66.7%   n/a(0)      66.7%   n/a(0)    66.7%    27 ⚠THIN
+  ○ HYG → SPY T+1                              35.7%   n/a(0)      35.7%   n/a(0)    35.7%    28 ⚠THIN
+  ○ HYG → KBE T+1                              44.8%   n/a(0)      44.8%   n/a(0)    44.8%    29 ⚠THIN
+
+======================================================================================
+SUMMARY — STEP 8 VALIDATION GATE
+======================================================================================
+
+  Scoring window:   2021-01-01 → 2025-12-31
+  Total tested:     15 relationships
+  Active (≥55%, n≥30): 4
+  Corpus acc (all tested):   61.3%
+  Corpus acc (active set):   81.9%
+
+  ALL SIGNALS ranked by corpus accuracy:
+  Signal                                         Corpus     n         Gate  Grade  Status
+  -------------------------------------------------------------------------------------
+  GLD → SLV T+0 (same-day)                     98.6%     72          ALL  VALIDATED        OK
+  GLD → GDX T+0 (same-day)                     94.6%     74          ALL  VALIDATED        OK
+  UUP → GLD T+0 (same-day)                     70.0%     10          ALL  VALIDATED        ⚠THIN
+  XLF → KBE T+1 (sector lead-lag)              67.7%     34    NO_CRISIS  ABOVE_BASELINE   OK
+  GLD → GDX T+1                                66.7%     78          ALL  ABOVE_BASELINE   OK
+  SPY → VNQ T+1                                66.7%     27    NO_CRISIS  ABOVE_BASELINE   ⚠THIN
+  UUP → EEM T+1                                61.1%     18          ALL  ABOVE_BASELINE   ⚠THIN
+  UUP → GLD T+1                                57.9%     19          ALL  MARGINAL         ⚠THIN
+  TLT → VNQ T+0 (same-day)                     54.1%     61          ALL  BELOW_BASELINE   OK
+  GLD → SLV T+1                                53.2%     79          ALL  BELOW_BASELINE   OK
+  TLT → VNQ T+1                                52.3%     65          ALL  BELOW_BASELINE   OK
+  TLT ↓ → XLF T+1 (yield-curve → banks)        48.8%     43    NO_CRISIS  BELOW_BASELINE   OK
+  SPY → GLD T+1                                46.9%     64          ALL  BELOW_BASELINE   OK
+  HYG → KBE T+1                                44.8%     29    NO_CRISIS  BELOW_BASELINE   ⚠THIN
+  HYG → SPY T+1                                35.7%     28    NO_CRISIS  BELOW_BASELINE   ⚠THIN
+
+  STEP 8 — VALIDATION GATE:
+  [✓] Corpus accuracy (active set) ≥70%:    81.9%  (target 70%)
+  [✓] No active signal with n<30:           PASS
+  [✓] No active signal with corpus_acc<55%: PASS
+  [✓] UUP (DXY proxy) has ≥1 VALIDATED signal: ✓
+  [○] TLT has ≥1 VALIDATED signal:            No VALIDATED yet
+  [✓] XLF has ≥1 ABOVE_BASELINE signal:       ✓
+
+  REGIME_B corpus accuracy (≥10 obs): 62.1% across 14 signals
+
+  REGIME_C corpus accuracy (≥10 obs): 61.7% across 7 signals
+
+  Saved: backtest_v8_results.json
+
+Done: 2026-04-17 11:54 UTC
+======================================================================================

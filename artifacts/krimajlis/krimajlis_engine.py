@@ -3,38 +3,55 @@ import time
 import math
 from collections import deque
 
-# ── Empirical RISK_OFF accuracy by target ticker ───────────────────
-# Source: Kryssalis backtest v7 (2021–2025 scoring window, 1.5σ threshold,
-# lag window, 0.3% min move). None = unvalidated (insufficient data).
-# Relationships below 50% empirical accuracy are flagged as BELOW_BASELINE.
-EMPIRICAL_ACCURACY = {
-    # ≥58% — empirically validated
-    "GLD":      0.611,  # SPY→GLD v7: 61.1% RISK_OFF  n=18
-    "SLV":      0.585,  # GLD→SLV v7: 58.5% RISK_OFF  n=41
-    "VNQ":      0.581,  # SPY→VNQ v7: 58.1% RISK_OFF  n=62
-    # 50–57% — above baseline, unvalidated threshold
-    "GDX":      0.545,  # GLD→GDX v7: 54.5% RISK_OFF  n=11 (thin)
-    "XLK":      0.517,  # SPY→XLK v7: 51.7% RISK_OFF  n=60
-    "KBE":      0.500,  # HYG→KBE v7: 50.0% RISK_OFF  n=58
-    "XLB":      0.500,  # proxy (similar to XLK/sector ETF)
-    # <50% — below baseline (signals produce negative alpha in RISK_OFF)
-    "SPY":      0.448,  # HYG→SPY v7: 44.8% RISK_OFF  n=58
-    "HYG":      0.448,  # proxy (HY credit basket)
-    "AGG":      0.464,  # GLD→AGG v7: 46.4% RISK_OFF  n=28
-    "TLT":      0.456,  # HYG→TLT v7: 45.6% RISK_OFF  n=57
-    "EWJ":      0.433,  # SPY→EWJ v7: 43.3% RISK_OFF  n=60
-    "EEM":      0.404,  # HYG→EEM v7: 40.4% RISK_OFF  n=57
-    "XME":      0.397,  # SPY→XME v6: 39.7% RISK_OFF  n=68
-    "CEW":      0.404,  # proxy (similar to EEM EM FX)
-    "JETS":     0.368,  # SPY→JETS v6: 36.8% — DEAD SIGNAL
-    # Unvalidated (insufficient historical data or FX/volatility instruments)
-    "VXX":      None,
-    "BDRY":     None,
-    "DJP":      None,
-    "AUDUSD=X": None,
-    "USDINR=X": None,
-    "^NSEI":    None,
+# ── Empirical accuracy by relationship ID (v8 backtest, 2021-2025) ──
+# Source: Kryssalis backtest v8 — 3 new triggers (UUP/TLT/XLF), T+0 same-day
+# testing, regime gating. Clean scoring window excludes Jan-Apr 2026 shock.
+# Grade tiers: VALIDATED ≥70% / ABOVE_BASELINE ≥60% / BELOW_BASELINE <60%
+#              SUPPRESSED (empirical <44%, dead signal)
+EMPIRICAL_ACCURACY_BY_REL = {
+    # ── VALIDATED ≥70% ─────────────────────────────────────────────
+    "rel_015": 0.946,   # Gold→GDX   T+0 same-day   94.6%  n=74  VALIDATED
+    "rel_029": 0.986,   # GLD→SLV    T+0 same-day   98.6%  n=72  VALIDATED
+    "rel_026": 0.700,   # UUP→GLD    T+0 same-day   70.0%  n=10  VALIDATED (THIN)
+    # ── ABOVE_BASELINE ≥60% ────────────────────────────────────────
+    "rel_028": 0.677,   # XLF→KBE    T+1            67.7%  n=34  ABOVE_BASELINE
+    "rel_012": 0.667,   # Real Yield→VNQ (SPY→VNQ)  66.7%  n=27  ABOVE_BASELINE (THIN)
+    "rel_027": 0.611,   # UUP→EEM    T+1            61.1%  n=18  ABOVE_BASELINE (THIN)
+    # ── BELOW_BASELINE 44-60% ──────────────────────────────────────
+    "rel_001": 0.579,   # DXY→GLD   (UUP→GLD T+1)  57.9%  n=19
+    "rel_023": 0.517,   # SPX→XLK                   51.7%  n=60
+    "rel_004": 0.500,   # WTI→XLB    proxy
+    "rel_011": 0.500,   # Real Yield→KBE            50.0%  n=58
+    "rel_007": 0.469,   # VIX→GLD   (SPY→GLD v8)   46.9%  n=64
+    "rel_024": 0.464,   # Real Yield→AGG            46.4%  n=28
+    "rel_020": 0.456,   # IG Spread→TLT             45.6%  n=57
+    "rel_025": 0.456,   # SPX→TLT    proxy          45.6%
+    "rel_010": 0.450,   # HY Spread→HYG  proxy
+    # ── SUPPRESSED — dead signals (empirical <44%) ─────────────────
+    "rel_017": 0.433,   # SPX→EWJ   43.3%  SUPPRESSED
+    "rel_002": 0.415,   # DXY→EEM   41.5%  SUPPRESSED
+    "rel_013": 0.397,   # BDI→XME   39.7%  SUPPRESSED
+    "rel_018": 0.397,   # China PMI→XME  SUPPRESSED
+    "rel_003": 0.368,   # WTI→JETS  36.8%  SUPPRESSED
+    "rel_009": 0.357,   # HY Spread→SPY 35.7%  SUPPRESSED
 }
+
+# Fallback ticker-level accuracy for rels not in BY_REL
+EMPIRICAL_ACCURACY = {
+    "GLD":      0.579,  "SLV":      0.986,  "GDX":      0.946,
+    "VNQ":      0.541,  "EEM":      0.415,  "JETS":     0.368,
+    "XME":      0.397,  "EWJ":      0.433,  "KBE":      0.677,
+    "XLK":      0.517,  "TLT":      0.456,  "AGG":      0.464,
+    "SPY":      0.357,  "HYG":      0.450,  "XLF":      0.677,
+    "XLB":      0.500,  "CEW":      0.415,  "BDRY":     None,
+    "DJP":      None,   "VXX":      None,   "AUDUSD=X": None,
+    "USDINR=X": None,   "^NSEI":    None,
+}
+
+# ── STEP 6: 4-tier grade thresholds ────────────────────────────────
+GRADE_VALIDATED      = 0.70
+GRADE_ABOVE_BASELINE = 0.60
+GRADE_SUPPRESSED     = 0.44   # conviction zeroed below this threshold
 
 CAUSAL_RELATIONSHIPS = [
     {
@@ -612,21 +629,125 @@ CAUSAL_RELATIONSHIPS = [
             {"node": "TLT ETF LONG Entry", "lag": "t+1-3 sessions", "role": "TARGET", "description": "Treasury rally lags equity selloff — LONG entry window"},
         ],
     },
+
+    # ── rel_026: UUP (DXY proxy) → GLD — v8 VALIDATED (70.0% T+0, n=10 thin) ──
+    {
+        "id": "rel_026",
+        "trigger_node": "UUP",
+        "downstream_instrument": "Gold ETF",
+        "downstream_ticker": "GLD",
+        "direction": "LONG",
+        "lag_min": 0,
+        "lag_max": 0,
+        "lag_unit": "sessions",
+        "accuracy": 0.70,
+        "expected_move_pct": 0.9,
+        "loophole_type": "TRANSMISSION_LAG",
+        "geography": "Global",
+        "trigger_direction": "falls",
+        "regime_gate": "ALL",
+        "rationale": "UUP (DXY proxy) intraday decline reprices gold within the same session. v8 empirical: 70.0% T+0 accuracy (n=10). Mechanism: dollar-denominated gold price mechanically inversely correlated with dollar strength. Same-day arbitrage by commodity desks closes the gap before the close.",
+        "chain_nodes": [
+            {"node": "UUP Falls (DXY Weakens)", "lag": "t=0", "role": "TRIGGER", "description": "Dollar index ETF drops — gold purchasing power premium widens"},
+            {"node": "Gold Spot Bid Rises", "lag": "t+1h", "role": "PROPAGATION", "description": "Commodity desks bid gold spot — dollar-denominated repricing"},
+            {"node": "GLD ETF Arbitrage", "lag": "t+2h", "role": "PROPAGATION", "description": "Authorized participants close ETF/spot gap — GLD catches up"},
+            {"node": "GLD Entry (same-day)", "lag": "t+same session", "role": "TARGET", "description": "v8 T+0 accuracy: 70.0%, n=10 — VALIDATED (thin)"},
+        ],
+    },
+
+    # ── rel_027: UUP (DXY proxy) → EEM — v8 ABOVE_BASELINE (61.1% T+1, n=18 thin) ──
+    {
+        "id": "rel_027",
+        "trigger_node": "UUP",
+        "downstream_instrument": "EM Equities ETF",
+        "downstream_ticker": "EEM",
+        "direction": "LONG",
+        "lag_min": 1,
+        "lag_max": 2,
+        "lag_unit": "sessions",
+        "accuracy": 0.611,
+        "expected_move_pct": 0.7,
+        "loophole_type": "TRANSMISSION_LAG",
+        "geography": "EM",
+        "trigger_direction": "falls",
+        "regime_gate": "ALL",
+        "rationale": "UUP (DXY proxy) decline eases USD-denominated debt burden for EM. v8 empirical: 61.1% T+1 accuracy (n=18). Mechanism: EM sovereign and corporate debt is 70%+ USD-denominated — dollar weakness reduces real debt burden, triggers carry reversal inflows.",
+        "chain_nodes": [
+            {"node": "UUP Falls (Dollar Weakens)", "lag": "t=0", "role": "TRIGGER", "description": "DXY decline — EM USD debt service cost falls"},
+            {"node": "EM Carry Reversal", "lag": "t+2h", "role": "PROPAGATION", "description": "USD short positions unwound — EM FX and equities bid"},
+            {"node": "EM Capital Inflows", "lag": "t+4h", "role": "PROPAGATION", "description": "Institutional rebalancing back into EM on dollar weakness"},
+            {"node": "EEM ETF T+1", "lag": "t+1-2 sessions", "role": "TARGET", "description": "v8 T+1 accuracy: 61.1%, n=18 — ABOVE_BASELINE (thin)"},
+        ],
+    },
+
+    # ── rel_028: XLF → KBE — v8 ABOVE_BASELINE (67.7% T+1, n=34) ──
+    {
+        "id": "rel_028",
+        "trigger_node": "XLF",
+        "downstream_instrument": "Bank ETF",
+        "downstream_ticker": "KBE",
+        "direction": "LONG",
+        "lag_min": 1,
+        "lag_max": 2,
+        "lag_unit": "sessions",
+        "accuracy": 0.677,
+        "expected_move_pct": 0.8,
+        "loophole_type": "SUPPLY_CHAIN_ECHO",
+        "geography": "US",
+        "trigger_direction": "rises",
+        "regime_gate": "NO_CRISIS",
+        "rationale": "XLF (broad financials) leads KBE (banks) — sector composition lag. v8 empirical: 67.7% T+1 accuracy (n=34). Mechanism: XLF includes insurance, asset managers, and diversified financials that reprice faster than bank-specific KBE on sector rotation flows.",
+        "chain_nodes": [
+            {"node": "XLF Rises", "lag": "t=0", "role": "TRIGGER", "description": "Broad financials bid — sector rotation into financial names"},
+            {"node": "Insurance/AM Reprice First", "lag": "t+1h", "role": "PROPAGATION", "description": "Diversified financials and asset managers reprice ahead of banks"},
+            {"node": "Bank Stock Catch-Up", "lag": "t+2-4h", "role": "PROPAGATION", "description": "KBE names lag XLF — bank-specific risk still processing"},
+            {"node": "KBE T+1 Entry", "lag": "t+1-2 sessions", "role": "TARGET", "description": "v8 T+1 accuracy: 67.7%, n=34 — ABOVE_BASELINE"},
+        ],
+    },
+
+    # ── rel_029: GLD → SLV — v8 VALIDATED (98.6% T+0 same-day, n=72) ──
+    {
+        "id": "rel_029",
+        "trigger_node": "Gold",
+        "downstream_instrument": "Silver ETF",
+        "downstream_ticker": "SLV",
+        "direction": "LONG",
+        "lag_min": 0,
+        "lag_max": 0,
+        "lag_unit": "sessions",
+        "accuracy": 0.986,
+        "expected_move_pct": 1.4,
+        "loophole_type": "TRANSMISSION_LAG",
+        "geography": "Global",
+        "trigger_direction": "rises",
+        "regime_gate": "ALL",
+        "rationale": "Gold intraday move transmits to silver within the same session. v8 empirical: 98.6% T+0 accuracy (n=72). Mechanism: precious metals markets are co-priced via London/NY fixing — gold and silver move together on the same macro drivers (dollar, real rates, risk-off). ETF arbitrage closes any gap same-day.",
+        "chain_nodes": [
+            {"node": "GLD Rises Intraday", "lag": "t=0", "role": "TRIGGER", "description": "Gold breaks intraday σ — precious metals complex bid"},
+            {"node": "Silver Spot Reprices", "lag": "t+30m", "role": "PROPAGATION", "description": "London/NY precious metals desks co-price silver on gold move"},
+            {"node": "SLV ETF Arbitrage", "lag": "t+1h", "role": "PROPAGATION", "description": "Authorized participants close SLV/silver spot gap same session"},
+            {"node": "SLV Entry (same-day)", "lag": "t+same session", "role": "TARGET", "description": "v8 T+0 accuracy: 98.6%, n=72 — VALIDATED ✓✓"},
+        ],
+    },
 ]
 
 NODE_DEFAULTS = {
-    "DXY": {"name": "US Dollar Index", "base": 100.0, "vol": 0.3},
-    "Gold": {"name": "Gold Spot", "base": 4700.0, "vol": 15.0},
-    "WTI": {"name": "WTI Crude", "base": 112.0, "vol": 1.5},
-    "VIX": {"name": "VIX Fear Index", "base": 24.0, "vol": 0.8},
-    "SPX": {"name": "S&P 500", "base": 6580.0, "vol": 30.0},
-    "NIFTY": {"name": "Nifty 50", "base": 22700.0, "vol": 120.0},
-    "IG Spread": {"name": "IG Credit Spread", "base": 96.0, "vol": 2.0},
-    "HY Spread": {"name": "HY Credit Spread", "base": 396.0, "vol": 8.0},
-    "Real Yield": {"name": "US 10Y Real Yield", "base": 2.15, "vol": 0.05},
-    "China PMI": {"name": "China Caixin PMI", "base": 50.4, "vol": 0.3},
-    "BDI": {"name": "Baltic Dry Index", "base": 1420.0, "vol": 40.0},
-    "EM FX": {"name": "EM Currency Basket", "base": 97.5, "vol": 0.5},
+    "DXY":       {"name": "US Dollar Index",        "base": 100.0,  "vol": 0.3},
+    "Gold":      {"name": "Gold Spot",              "base": 4700.0, "vol": 15.0},
+    "WTI":       {"name": "WTI Crude",              "base": 112.0,  "vol": 1.5},
+    "VIX":       {"name": "VIX Fear Index",         "base": 24.0,   "vol": 0.8},
+    "SPX":       {"name": "S&P 500",                "base": 6580.0, "vol": 30.0},
+    "NIFTY":     {"name": "Nifty 50",               "base": 22700.0,"vol": 120.0},
+    "IG Spread": {"name": "IG Credit Spread",       "base": 96.0,   "vol": 2.0},
+    "HY Spread": {"name": "HY Credit Spread",       "base": 396.0,  "vol": 8.0},
+    "Real Yield":{"name": "US 10Y Real Yield",      "base": 2.15,   "vol": 0.05},
+    "China PMI": {"name": "China Caixin PMI",       "base": 50.4,   "vol": 0.3},
+    "BDI":       {"name": "Baltic Dry Index",       "base": 1420.0, "vol": 40.0},
+    "EM FX":     {"name": "EM Currency Basket",     "base": 97.5,   "vol": 0.5},
+    # ── v8: 3 new independent trigger instruments ──────────────────
+    "UUP":       {"name": "US Dollar ETF (DXY)",    "base": 28.5,   "vol": 0.15},
+    "TLT":       {"name": "20Y Treasury ETF",       "base": 90.0,   "vol": 1.2},
+    "XLF":       {"name": "Financials Select ETF",  "base": 48.0,   "vol": 0.8},
 }
 
 REGIME_DEFAULTS = {
@@ -752,73 +873,120 @@ class KrimajlisEngine:
             {"node": downstream, "lag": lag_label, "role": "TARGET"},
         ]
 
+    def _get_vix_regime(self):
+        """
+        Derive 3-bucket VIX regime from current VIX node value.
+        REGIME_A: VIX <15  (calm, RISK_ON)
+        REGIME_B: VIX 15-25 (elevated, mixed)
+        REGIME_C: VIX >25  (crisis, RISK_OFF — only crisis signals fire)
+        """
+        vix = self.node_values.get("VIX", {}).get("current", 24.0)
+        if vix < 15.0:
+            return "REGIME_A", vix
+        elif vix <= 25.0:
+            return "REGIME_B", vix
+        else:
+            return "REGIME_C", vix
+
     def generate_signals(self, regime_state):
         self.cycle_count += 1
         now = time.time()
         signals = []
 
+        # ── STEP 3: VIX-based regime bucket ───────────────────────
+        vix_regime, vix_val = self._get_vix_regime()
+
         for rel in CAUSAL_RELATIONSHIPS:
             trigger_node = rel["trigger_node"]
             z_score = self.compute_zscore(trigger_node)
 
+            # ── STEP 3: regime gate — suppress signals outside their regime ──
+            gate = rel.get("regime_gate", "ALL")
+            if gate == "NO_CRISIS" and vix_regime == "REGIME_C":
+                regime_suppressed = True
+            elif gate == "CRISIS_ONLY" and vix_regime != "REGIME_C":
+                regime_suppressed = True
+            else:
+                regime_suppressed = False
+
             regime_mult = self._regime_alignment(rel, regime_state)
             z_boost = min(1.0, abs(z_score) * 0.4)
 
-            # Use empirical RISK_OFF accuracy as conviction base when available.
-            # Falls back to stated accuracy for unvalidated instruments.
-            ticker = rel["downstream_ticker"]
-            empirical = EMPIRICAL_ACCURACY.get(ticker)
+            # ── STEP 6: empirical accuracy — rel_id first, ticker fallback ──
+            rel_id   = rel["id"]
+            ticker   = rel["downstream_ticker"]
+            empirical = (EMPIRICAL_ACCURACY_BY_REL.get(rel_id)
+                         or EMPIRICAL_ACCURACY.get(ticker))
             accuracy_base = empirical if empirical is not None else rel["accuracy"]
 
-            base_conviction = accuracy_base * regime_mult
-            raw_conviction = base_conviction * (0.7 + z_boost)
-            raw_conviction *= self.rng.uniform(0.93, 1.07)
-            conviction = min(0.97, max(0.35, raw_conviction))
-
-            # Empirical grade label for UI transparency
+            # ── STEP 6: 4-tier grade ──────────────────────────────
             if empirical is None:
                 empirical_grade = "UNVALIDATED"
-            elif empirical >= 0.62:
+            elif empirical >= GRADE_VALIDATED:
                 empirical_grade = "VALIDATED"
-            elif empirical >= 0.50:
+            elif empirical >= GRADE_ABOVE_BASELINE:
                 empirical_grade = "ABOVE_BASELINE"
-            else:
+            elif empirical >= GRADE_SUPPRESSED:
                 empirical_grade = "BELOW_BASELINE"
+            else:
+                empirical_grade = "SUPPRESSED"
 
-            effective_z = z_score if abs(z_score) > 0.3 else self.rng.uniform(0.3, 1.5) * (1 if self.rng.random() > 0.5 else -1)
+            suppressed = (empirical_grade == "SUPPRESSED") or regime_suppressed
+
+            # ── Conviction: suppressed signals get floor 0.001 ────
+            if suppressed:
+                conviction = 0.001
+            else:
+                base_conviction = accuracy_base * regime_mult
+                raw_conviction  = base_conviction * (0.7 + z_boost)
+                raw_conviction *= self.rng.uniform(0.93, 1.07)
+                conviction = min(0.97, max(0.35, raw_conviction))
+
+            effective_z = (z_score if abs(z_score) > 0.3
+                           else self.rng.uniform(0.3, 1.5) *
+                                (1 if self.rng.random() > 0.5 else -1))
 
             if rel["id"] not in self.trigger_times:
                 self.trigger_times[rel["id"]] = now - self.rng.uniform(0, 90)
             freshness = self._get_freshness(self.trigger_times[rel["id"]])
 
             gap = self._compute_gap_to_theoretical(rel, effective_z, regime_mult)
-            expected_sessions = rel["lag_min"] + self.rng.randint(0, max(1, rel["lag_max"] - rel["lag_min"]))
+            expected_sessions = rel["lag_min"] + self.rng.randint(
+                0, max(1, rel["lag_max"] - rel["lag_min"]))
             causal_chain = self._build_causal_chain(rel, effective_z)
 
+            # ── STEP 7: full API output fields ────────────────────
             signal = {
-                "signal_id": rel["id"],
-                "ticker": rel["downstream_ticker"],
-                "instrument_name": rel["downstream_instrument"],
-                "geography": rel["geography"],
-                "direction": rel["direction"],
-                "conviction": round(conviction, 4),
-                "loophole_type": rel["loophole_type"],
-                "causal_chain": causal_chain,
-                "gap_to_theoretical": gap,
+                "signal_id":                rel_id,
+                "ticker":                   ticker,
+                "instrument_name":          rel["downstream_instrument"],
+                "geography":                rel["geography"],
+                "direction":                rel["direction"],
+                "conviction":               round(conviction, 4),
+                "loophole_type":            rel["loophole_type"],
+                "causal_chain":             causal_chain,
+                "gap_to_theoretical":       gap,
                 "expected_reversion_sessions": expected_sessions,
-                "regime_alignment": regime_mult >= 1.1,
-                "freshness": freshness,
-                "rationale": rel["rationale"],
-                "trigger_node": trigger_node,
-                "trigger_z_score": round(effective_z, 4),
-                "lag_description": f"{rel['lag_min']}-{rel['lag_max']} {rel['lag_unit']}",
-                "historical_accuracy": rel["accuracy"],
-                "empirical_accuracy": empirical,
-                "empirical_grade": empirical_grade,
+                "regime_alignment":         regime_mult >= 1.1,
+                "freshness":                freshness,
+                "rationale":                rel["rationale"],
+                "trigger_node":             trigger_node,
+                "trigger_instrument":       trigger_node,   # STEP 7 explicit field
+                "trigger_z_score":          round(effective_z, 4),
+                "lag_description":          f"{rel['lag_min']}-{rel['lag_max']} {rel['lag_unit']}",
+                "historical_accuracy":      rel["accuracy"],
+                "empirical_accuracy":       empirical,
+                "empirical_grade":          empirical_grade,
+                "regime_gate":              gate,           # STEP 7
+                "vix_regime":               vix_regime,     # STEP 7
+                "vix_level":                round(vix_val, 2),
+                "regime_suppressed":        regime_suppressed,
             }
             signals.append(signal)
 
-        signals.sort(key=lambda x: x["conviction"], reverse=True)
+        # Active signals sorted by conviction; suppressed signals at the back
+        signals.sort(key=lambda x: (0 if x["conviction"] > 0.01 else 1,
+                                    -x["conviction"]))
         self.signal_cache = signals
         return self.signal_cache
 
