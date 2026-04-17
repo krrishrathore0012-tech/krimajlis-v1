@@ -3,6 +3,39 @@ import time
 import math
 from collections import deque
 
+# ── Empirical RISK_OFF accuracy by target ticker ───────────────────
+# Source: Kryssalis backtest v7 (2021–2025 scoring window, 1.5σ threshold,
+# lag window, 0.3% min move). None = unvalidated (insufficient data).
+# Relationships below 50% empirical accuracy are flagged as BELOW_BASELINE.
+EMPIRICAL_ACCURACY = {
+    # ≥58% — empirically validated
+    "GLD":      0.611,  # SPY→GLD v7: 61.1% RISK_OFF  n=18
+    "SLV":      0.585,  # GLD→SLV v7: 58.5% RISK_OFF  n=41
+    "VNQ":      0.581,  # SPY→VNQ v7: 58.1% RISK_OFF  n=62
+    # 50–57% — above baseline, unvalidated threshold
+    "GDX":      0.545,  # GLD→GDX v7: 54.5% RISK_OFF  n=11 (thin)
+    "XLK":      0.517,  # SPY→XLK v7: 51.7% RISK_OFF  n=60
+    "KBE":      0.500,  # HYG→KBE v7: 50.0% RISK_OFF  n=58
+    "XLB":      0.500,  # proxy (similar to XLK/sector ETF)
+    # <50% — below baseline (signals produce negative alpha in RISK_OFF)
+    "SPY":      0.448,  # HYG→SPY v7: 44.8% RISK_OFF  n=58
+    "HYG":      0.448,  # proxy (HY credit basket)
+    "AGG":      0.464,  # GLD→AGG v7: 46.4% RISK_OFF  n=28
+    "TLT":      0.456,  # HYG→TLT v7: 45.6% RISK_OFF  n=57
+    "EWJ":      0.433,  # SPY→EWJ v7: 43.3% RISK_OFF  n=60
+    "EEM":      0.404,  # HYG→EEM v7: 40.4% RISK_OFF  n=57
+    "XME":      0.397,  # SPY→XME v6: 39.7% RISK_OFF  n=68
+    "CEW":      0.404,  # proxy (similar to EEM EM FX)
+    "JETS":     0.368,  # SPY→JETS v6: 36.8% — DEAD SIGNAL
+    # Unvalidated (insufficient historical data or FX/volatility instruments)
+    "VXX":      None,
+    "BDRY":     None,
+    "DJP":      None,
+    "AUDUSD=X": None,
+    "USDINR=X": None,
+    "^NSEI":    None,
+}
+
 CAUSAL_RELATIONSHIPS = [
     {
         "id": "rel_001",
@@ -730,10 +763,27 @@ class KrimajlisEngine:
 
             regime_mult = self._regime_alignment(rel, regime_state)
             z_boost = min(1.0, abs(z_score) * 0.4)
-            base_conviction = rel["accuracy"] * regime_mult
+
+            # Use empirical RISK_OFF accuracy as conviction base when available.
+            # Falls back to stated accuracy for unvalidated instruments.
+            ticker = rel["downstream_ticker"]
+            empirical = EMPIRICAL_ACCURACY.get(ticker)
+            accuracy_base = empirical if empirical is not None else rel["accuracy"]
+
+            base_conviction = accuracy_base * regime_mult
             raw_conviction = base_conviction * (0.7 + z_boost)
             raw_conviction *= self.rng.uniform(0.93, 1.07)
-            conviction = min(0.97, max(0.45, raw_conviction))
+            conviction = min(0.97, max(0.35, raw_conviction))
+
+            # Empirical grade label for UI transparency
+            if empirical is None:
+                empirical_grade = "UNVALIDATED"
+            elif empirical >= 0.62:
+                empirical_grade = "VALIDATED"
+            elif empirical >= 0.50:
+                empirical_grade = "ABOVE_BASELINE"
+            else:
+                empirical_grade = "BELOW_BASELINE"
 
             effective_z = z_score if abs(z_score) > 0.3 else self.rng.uniform(0.3, 1.5) * (1 if self.rng.random() > 0.5 else -1)
 
@@ -763,6 +813,8 @@ class KrimajlisEngine:
                 "trigger_z_score": round(effective_z, 4),
                 "lag_description": f"{rel['lag_min']}-{rel['lag_max']} {rel['lag_unit']}",
                 "historical_accuracy": rel["accuracy"],
+                "empirical_accuracy": empirical,
+                "empirical_grade": empirical_grade,
             }
             signals.append(signal)
 

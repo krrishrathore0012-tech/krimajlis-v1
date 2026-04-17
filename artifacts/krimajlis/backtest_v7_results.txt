@@ -1,0 +1,87 @@
+==================================================================================
+KRYSSALIS BACKTEST v7 — CORPUS ACCURACY REPAIR
+Trigger: 1.5σ (RISK_OFF) / 2.0σ (RISK_ON)
+Lag window: [0.5×, 2.0×] capped at 16 bars
+Min target move: 0.3%
+Scoring window: 2021-01-01 → 2025-12-31  (tariff shock excluded)
+Relationships: 12 (3 dead signals pruned from v6's 15)
+Run: 2026-04-17 11:44 UTC
+==================================================================================
+
+Building VIX regime (full history inc. 2026)...
+Polygon VIX unavailable — using yfinance ^VIX...
+Regime: 560 RISK_OFF / 845 RISK_ON (39.9% RISK_OFF)
+
+Relationship                                   All    R_OFF (n)    R_ON     N  Status
+----------------------------------------------------------------------------------
+
+-- DAILY scoring window 2021-01-01 → 2025-12-31 (12 relationships) --
+SPY → GLD daily T+1                          57.9%   61.1% (18) n/a (1)    19  ✗ WEAK
+GLD → GDX daily T+1                          50.0%   54.5% (11)   40.0%    16  ✗ WEAK
+GLD → AGG daily T+1                          50.0%   46.4% (28) n/a (4)    32  ✗ WEAK
+GLD → SLV daily T+1                          58.0%   58.5% (41)   55.6%    50  ✗ WEAK
+HYG → SPY daily T+1                          44.3%   44.8% (58) n/a (3)    61  ✗ WEAK
+HYG → SPY daily T+2                          47.5%   48.3% (58) n/a (3)    61  ✗ WEAK
+HYG → EEM daily T+1                          41.7%   40.4% (57) n/a (3)    60  ✗ WEAK
+HYG → TLT daily T+1                          45.0%   45.6% (57) n/a (3)    60  ✗ WEAK
+HYG → KBE daily T+1                          49.2%   50.0% (58) n/a (3)    61  ✗ WEAK
+SPY → EWJ daily T+1                          44.3%   43.3% (60) n/a (1)    61  ✗ WEAK
+SPY → XLK daily T+1                          50.8%   51.7% (60) n/a (1)    61  ✗ WEAK
+SPY → VNQ daily T+1                          57.1%   58.1% (62) n/a (1)    63  ✗ WEAK
+
+==================================================================================
+SUMMARY — v7 CORPUS REPAIR vs v6 BASELINE
+==================================================================================
+
+  v6 baseline overall:    47.7%  →  v7: 49.6%  (Δ +1.9pp)
+  v6 baseline RISK_OFF:   48.2%  →  v7: 50.2%  (Δ +2.0pp)
+  v6 signals:             15     →  v7: 12 (3 dead signals pruned)
+  Validated ≥58% overall: 1/12
+  Validated ≥62% R_OFF:   0/12
+  Validated ≥70% R_OFF:   0/12
+
+  By type — RISK_OFF accuracy:
+    TRANSMISSION_LAG         : 53.4%  (≥62%: 0/8  ≥70%: 0/8)
+    INSTITUTIONAL_FLOW       : 43.9%  (≥62%: 0/4  ≥70%: 0/4)
+
+  All 12 signals ranked by RISK_OFF accuracy:
+    ○ SPY → GLD daily T+1                         : 61.1% R_OFF  57.9% all  (stated 71%)  n=18  [-8.9pp to 70%]
+    ○ GLD → SLV daily T+1                         : 58.5% R_OFF  58.0% all  (stated 78%)  n=41  [-11.5pp to 70%]
+    ○ SPY → VNQ daily T+1                         : 58.1% R_OFF  57.1% all  (stated 73%)  n=62  [-11.9pp to 70%]
+    ○ GLD → GDX daily T+1                         : 54.5% R_OFF  50.0% all  (stated 79%)  n=11  [-15.5pp to 70%]
+    ○ SPY → XLK daily T+1                         : 51.7% R_OFF  50.8% all  (stated 83%)  n=60  [-18.3pp to 70%]
+    ○ HYG → KBE daily T+1                         : 50.0% R_OFF  49.2% all  (stated 72%)  n=58  [-20.0pp to 70%]
+    ○ HYG → SPY daily T+2                         : 48.3% R_OFF  47.5% all  (stated 82%)  n=58  [-21.7pp to 70%]
+    ○ GLD → AGG daily T+1                         : 46.4% R_OFF  50.0% all  (stated 70%)  n=28  [-23.6pp to 70%]
+    ○ HYG → TLT daily T+1                         : 45.6% R_OFF  45.0% all  (stated 74%)  n=57  [-24.4pp to 70%]
+    ○ HYG → SPY daily T+1                         : 44.8% R_OFF  44.3% all  (stated 82%)  n=58  [-25.2pp to 70%]
+    ○ SPY → EWJ daily T+1                         : 43.3% R_OFF  44.3% all  (stated 81%)  n=60  [-26.7pp to 70%]
+    ○ HYG → EEM daily T+1                         : 40.4% R_OFF  41.7% all  (stated 72%)  n=57  [-29.6pp to 70%]
+
+  KRYSSALIS v7 RISK_OFF ACCURACY:  50.2%
+  KRYSSALIS v7 OVERALL ACCURACY:   49.6%
+
+  ✗ BELOW GRADE
+     Gap to near-grade (62%): 11.8pp
+     Gap to acquisition (70%): 19.8pp
+
+  EMPIRICAL ACCURACY vs STATED (for live engine calibration):
+  Signal                                        Stated  Empirical R_OFF   Delta  Grade
+  ----------------------------------------------------------------------------------
+  SPY → GLD daily T+1                          71%             61.1%  -9.9pp  thin
+  GLD → SLV daily T+1                          78%             58.5% -19.5pp  thin
+  SPY → VNQ daily T+1                          73%             58.1% -14.9pp  thin
+  GLD → GDX daily T+1                          79%             54.5% -24.5pp  thin
+  SPY → XLK daily T+1                          83%             51.7% -31.3pp  thin
+  HYG → KBE daily T+1                          72%             50.0% -22.0pp  thin
+  HYG → SPY daily T+2                          82%             48.3% -33.7pp  <50%
+  GLD → AGG daily T+1                          70%             46.4% -23.6pp  <50%
+  HYG → TLT daily T+1                          74%             45.6% -28.4pp  <50%
+  HYG → SPY daily T+1                          82%             44.8% -37.2pp  <50%
+  SPY → EWJ daily T+1                          81%             43.3% -37.7pp  <50%
+  HYG → EEM daily T+1                          72%             40.4% -31.6pp  <50%
+
+  Saved: backtest_v7_results.json
+
+Done: 2026-04-17 11:44 UTC
+==================================================================================

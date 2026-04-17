@@ -1,0 +1,240 @@
+{
+  "version": "v7",
+  "timestamp_utc": "2026-04-17T11:44:16.250973",
+  "scoring_window": "2021-01-01 \u2192 2025-12-31",
+  "fixes_applied": [
+    "tariff_shock_exclusion",
+    "dead_signal_pruning",
+    "1.5\u03c3_threshold",
+    "lag_window",
+    "0.3%_min_move"
+  ],
+  "baselines": {
+    "v4": {
+      "overall": 0.467,
+      "risk_off": 0.469
+    },
+    "v6": {
+      "overall": 0.477,
+      "risk_off": 0.482
+    }
+  },
+  "v7_result": {
+    "overall": 0.4965,
+    "risk_off": 0.5023,
+    "total_ok": 12,
+    "validated_58_all": 1,
+    "validated_62_ro": 0,
+    "validated_70_ro": 0,
+    "delta_vs_v6_overall": 1.95,
+    "delta_vs_v6_risk_off": 2.03
+  },
+  "signal_results": [
+    {
+      "status": "OK",
+      "name": "SPY \u2192 GLD daily T+1",
+      "type": "TRANSMISSION_LAG",
+      "stated": 0.71,
+      "all_acc": 0.579,
+      "all_n": 19,
+      "off_acc": 0.611,
+      "off_n": 18,
+      "on_acc": 0.0,
+      "on_n": 1
+    },
+    {
+      "status": "OK",
+      "name": "GLD \u2192 GDX daily T+1",
+      "type": "TRANSMISSION_LAG",
+      "stated": 0.79,
+      "all_acc": 0.5,
+      "all_n": 16,
+      "off_acc": 0.545,
+      "off_n": 11,
+      "on_acc": 0.4,
+      "on_n": 5
+    },
+    {
+      "status": "OK",
+      "name": "GLD \u2192 AGG daily T+1",
+      "type": "INSTITUTIONAL_FLOW",
+      "stated": 0.7,
+      "all_acc": 0.5,
+      "all_n": 32,
+      "off_acc": 0.464,
+      "off_n": 28,
+      "on_acc": 0.75,
+      "on_n": 4
+    },
+    {
+      "status": "OK",
+      "name": "GLD \u2192 SLV daily T+1",
+      "type": "TRANSMISSION_LAG",
+      "stated": 0.78,
+      "all_acc": 0.58,
+      "all_n": 50,
+      "off_acc": 0.585,
+      "off_n": 41,
+      "on_acc": 0.556,
+      "on_n": 9
+    },
+    {
+      "status": "OK",
+      "name": "HYG \u2192 SPY daily T+1",
+      "type": "TRANSMISSION_LAG",
+      "stated": 0.82,
+      "all_acc": 0.443,
+      "all_n": 61,
+      "off_acc": 0.448,
+      "off_n": 58,
+      "on_acc": 0.333,
+      "on_n": 3
+    },
+    {
+      "status": "OK",
+      "name": "HYG \u2192 SPY daily T+2",
+      "type": "TRANSMISSION_LAG",
+      "stated": 0.82,
+      "all_acc": 0.475,
+      "all_n": 61,
+      "off_acc": 0.483,
+      "off_n": 58,
+      "on_acc": 0.333,
+      "on_n": 3
+    },
+    {
+      "status": "OK",
+      "name": "HYG \u2192 EEM daily T+1",
+      "type": "INSTITUTIONAL_FLOW",
+      "stated": 0.72,
+      "all_acc": 0.417,
+      "all_n": 60,
+      "off_acc": 0.404,
+      "off_n": 57,
+      "on_acc": 0.667,
+      "on_n": 3
+    },
+    {
+      "status": "OK",
+      "name": "HYG \u2192 TLT daily T+1",
+      "type": "INSTITUTIONAL_FLOW",
+      "stated": 0.74,
+      "all_acc": 0.45,
+      "all_n": 60,
+      "off_acc": 0.456,
+      "off_n": 57,
+      "on_acc": 0.333,
+      "on_n": 3
+    },
+    {
+      "status": "OK",
+      "name": "HYG \u2192 KBE daily T+1",
+      "type": "TRANSMISSION_LAG",
+      "stated": 0.72,
+      "all_acc": 0.492,
+      "all_n": 61,
+      "off_acc": 0.5,
+      "off_n": 58,
+      "on_acc": 0.333,
+      "on_n": 3
+    },
+    {
+      "status": "OK",
+      "name": "SPY \u2192 EWJ daily T+1",
+      "type": "INSTITUTIONAL_FLOW",
+      "stated": 0.81,
+      "all_acc": 0.443,
+      "all_n": 61,
+      "off_acc": 0.433,
+      "off_n": 60,
+      "on_acc": 1.0,
+      "on_n": 1
+    },
+    {
+      "status": "OK",
+      "name": "SPY \u2192 XLK daily T+1",
+      "type": "TRANSMISSION_LAG",
+      "stated": 0.83,
+      "all_acc": 0.508,
+      "all_n": 61,
+      "off_acc": 0.517,
+      "off_n": 60,
+      "on_acc": 0.0,
+      "on_n": 1
+    },
+    {
+      "status": "OK",
+      "name": "SPY \u2192 VNQ daily T+1",
+      "type": "TRANSMISSION_LAG",
+      "stated": 0.73,
+      "all_acc": 0.571,
+      "all_n": 63,
+      "off_acc": 0.581,
+      "off_n": 62,
+      "on_acc": 0.0,
+      "on_n": 1
+    }
+  ],
+  "empirical_accuracy_map": {
+    "SPY \u2192 GLD daily T+1": {
+      "stated": 0.71,
+      "empirical_ro": 0.611,
+      "n_obs_ro": 18
+    },
+    "GLD \u2192 GDX daily T+1": {
+      "stated": 0.79,
+      "empirical_ro": 0.545,
+      "n_obs_ro": 11
+    },
+    "GLD \u2192 AGG daily T+1": {
+      "stated": 0.7,
+      "empirical_ro": 0.464,
+      "n_obs_ro": 28
+    },
+    "GLD \u2192 SLV daily T+1": {
+      "stated": 0.78,
+      "empirical_ro": 0.585,
+      "n_obs_ro": 41
+    },
+    "HYG \u2192 SPY daily T+1": {
+      "stated": 0.82,
+      "empirical_ro": 0.448,
+      "n_obs_ro": 58
+    },
+    "HYG \u2192 SPY daily T+2": {
+      "stated": 0.82,
+      "empirical_ro": 0.483,
+      "n_obs_ro": 58
+    },
+    "HYG \u2192 EEM daily T+1": {
+      "stated": 0.72,
+      "empirical_ro": 0.404,
+      "n_obs_ro": 57
+    },
+    "HYG \u2192 TLT daily T+1": {
+      "stated": 0.74,
+      "empirical_ro": 0.456,
+      "n_obs_ro": 57
+    },
+    "HYG \u2192 KBE daily T+1": {
+      "stated": 0.72,
+      "empirical_ro": 0.5,
+      "n_obs_ro": 58
+    },
+    "SPY \u2192 EWJ daily T+1": {
+      "stated": 0.81,
+      "empirical_ro": 0.433,
+      "n_obs_ro": 60
+    },
+    "SPY \u2192 XLK daily T+1": {
+      "stated": 0.83,
+      "empirical_ro": 0.517,
+      "n_obs_ro": 60
+    },
+    "SPY \u2192 VNQ daily T+1": {
+      "stated": 0.73,
+      "empirical_ro": 0.581,
+      "n_obs_ro": 62
+    }
+  }
+}
