@@ -12,3 +12,9 @@ id = "dq40KYD4IXwQv32ZuJCGD"
 uri = "file://krimajlis_latest.zip"
 type = "unspecified"
 title = "KRIMAJLIS — Latest Source (commit 5e6d9b6)"
+
+[[outputs]]
+id = "IAmnatoQ4euVVRnDltFpV"
+uri = "file://artifacts/krimajlis/krimajlis_v8_clean.zip"
+type = "unspecified"
+title = "KRIMAJLIS v8 — Clean Production Package"
