@@ -1,0 +1,24 @@
+KRIMAJLIS v8 — GitHub Push Verification Log
+============================================
+Repository  : https://github.com/krrishrathore0012-tech/krimajlis-v1
+Branch      : main
+Push date   : 2026-04-17 (via GITHUB_TOKEN secret in Replit)
+
+Commits pushed to origin/main:
+  8876eb2  task: Push all variant results to GitHub
+  6225c97  feat: Variant D regime-unlocked concentrated strategy — ALL 18 GATES PASS
+  a879d4d  feat: Variant C concentrated precious metals simulation — ALL 12 GATES PASS
+  545472f  Update institutional trading simulation with lower costs and higher capital
+  b150dc4  Update simulation to capture trade performance and results accurately
+  ed9d157  Add production-ready version of the analytics engine
+
+Files confirmed live on GitHub:
+  artifacts/krimajlis/paper_trade_v8_concentrated.py
+  artifacts/krimajlis/results/krimajlis_paper_trade_v8_concentrated.json
+  artifacts/krimajlis/results/krimajlis_paper_trade_v8_concentrated_report.md
+  artifacts/krimajlis/paper_trade_v8_variant_d.py
+  artifacts/krimajlis/results/krimajlis_paper_trade_v8_variant_d.json
+  artifacts/krimajlis/results/krimajlis_paper_trade_v8_variant_d_report.md
+
+Token: stored as GITHUB_TOKEN secret in Replit Secrets (not written to any file)
+Remote URL: https://github.com/krrishrathore0012-tech/krimajlis-v1.git (token stripped after push)
